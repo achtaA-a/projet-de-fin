@@ -1,0 +1,149 @@
+<!-- Booking Card -->
+<section class="booking-section py-5" id="booking">
+    <div class="container">
+        <div class="booking-card">
+            <div class="booking-header text-center mb-4">
+                <h2 class="booking-title">
+                    <i class="fas fa-plane-departure me-3"></i>
+                    Réservez votre vol
+                </h2>
+                <p class="booking-subtitle">Trouvez et réservez votre vol en quelques clics</p>
+            </div>
+
+            <div class="step-progress mb-5">
+                <div class="progress-bar-inner" [style.width]="(currentStep / 5) * 100 + '%'"></div>
+                <div class="step" [class.active]="currentStep >= 1">
+                    <div class="step-number">1</div>
+                    <div class="step-label">Recherche</div>
+                </div>
+                <div class="step" [class.active]="currentStep >= 2">
+                    <div class="step-number">2</div>
+                    <div class="step-label">Voyageurs</div>
+                </div>
+                <div class="step" [class.active]="currentStep >= 3">
+                    <div class="step-number">3</div>
+                    <div class="step-label">Options</div>
+                </div>
+                <div class="step" [class.active]="currentStep >= 4">
+                    <div class="step-number">4</div>
+                    <div class="step-label">Paiement</div>
+                </div>
+                <div class="step" [class.active]="currentStep >= 5">
+                    <div class="step-number">5</div>
+                    <div class="step-label">Confirmation</div>
+                </div>
+            </div>
+
+            <!-- Step 1: Flight Search -->
+            @if (currentStep === 1) {
+            <div id="step-1" class="step-content">
+                <h3 class="mb-4">Recherchez votre vol</h3>
+
+                <!-- Recent Searches -->
+                @if (recentSearches.length > 0) {
+                <div id="recent-searches" class="mb-4">
+                    <h5 class="mb-3"><i class="fas fa-history me-2"></i>Recherches récentes</h5>
+                    <div class="d-flex flex-wrap gap-2">
+                        @for (search of recentSearches; track search.timestamp) {
+                        <div class="recent-search-item" (click)="useRecentSearch(search)">
+                            <div class="fw-bold">{{ getDestinationName(search.destination) }}</div>
+                            <div class="small">{{ formatDate(search.departureDate) }}</div>
+                            @if (search.returnDate) {
+                            <div class="small">Retour: {{ formatDate(search.returnDate) }}</div>
+                            }
+                        </div>
+                        }
+                    </div>
+                </div>
+                }
+
+                <form (ngSubmit)="searchFlights()" #searchForm="ngForm">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Ville de départ</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-plane-departure"></i></span>
+                                <input type="text" class="form-control" value="N'Djamena (NDJ)" readonly>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Ville de destination</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-plane-arrival"></i></span>
+                                <select class="form-select" id="destination" 
+                                        [(ngModel)]="flightSearch.destination" 
+                                        name="destination" required>
+                                    <option value="">Sélectionnez une destination</option>
+                                    @for (dest of destinations; track dest.code) {
+                                    <option [value]="dest.code">{{ dest.name }}</option>
+                                    }
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Date de départ</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
+                                <input type="date" class="form-control" id="departure-date"
+                                       [(ngModel)]="flightSearch.departureDate" 
+                                       name="departureDate" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Date de retour (optionnel)</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
+                                <input type="date" class="form-control" id="return-date"
+                                       [(ngModel)]="flightSearch.returnDate" 
+                                       name="returnDate">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Passagers</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-users"></i></span>
+                                <select class="form-select" id="passengers"
+                                        [(ngModel)]="flightSearch.passengers" 
+                                        name="passengers">
+                                    <option value="1">1 Passager</option>
+                                    <option value="2">2 Passagers</option>
+                                    <option value="3">3 Passagers</option>
+                                    <option value="4">4 Passagers</option>
+                                    <option value="5">5 Passagers</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Classe</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-chair"></i></span>
+                                <select class="form-select" id="class"
+                                        [(ngModel)]="flightSearch.travelClass" 
+                                        name="travelClass">
+                                    <option value="economy">Économique</option>
+                                    <option value="business">Affaires</option>
+                                    <option value="first">Première</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">&nbsp;</label>
+                            <button type="submit" class="btn btn-td-primary w-100">
+                                <a class="nav-link" routerLink="/voyageur">
+                                Continuer </a> <i class="fas fa-arrow-right ms-2"></i>
+                            </button>
+                            
+                        </div>
+                    </div>
+                </form>
+            </div>
+            }
+
+            <!-- Ajoutez les autres étapes ici -->
+        </div>
+    </div>
+</section>

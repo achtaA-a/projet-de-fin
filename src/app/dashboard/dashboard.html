@@ -1,0 +1,447 @@
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark" id="top">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-plane-departure fa-2x"></i>
+                <span>TCHAD VOYAGES</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#" onclick="goHome()">Accueil</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" onclick="showDestinations()">Destinations</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" onclick="showPromotions()">Promotions</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" onclick="showContact()">Contact</a>
+                    </li>
+                    <li class="nav-item">
+                        <div class="nav-link language-selector" onclick="toggleLanguage()">
+                            <span id="current-lang">FR</span> | <span id="other-lang">AR</span>
+                        </div>
+                    </li>
+                    <li class="nav-item">
+                        <button class="btn btn-outline-light btn-sm ms-2" onclick="toggleTheme()" id="theme-toggle">
+                            <i class="fas fa-moon"></i>
+                        </button>
+                    </li>
+                    <li class="nav-item ms-2">
+                        <button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#loginModal">
+                            <i class="fas fa-sign-in-alt me-1"></i> Connexion
+                        </button>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-section" id="home">
+        <div class="container">
+            <div class="row align-items-center min-vh-75">
+                <div class="col-lg-6">
+                    <div class="hero-content">
+                        <div class="hero-badge mb-4">
+                            <i class="fas fa-star me-2"></i>
+                            <span>Compagnie aérienne de confiance depuis 2020</span>
+                        </div>
+                        <h1 class="hero-title mb-4">
+                            Explorez le monde depuis le
+                            <span class="text-highlight">cœur de l'Afrique</span>
+                        </h1>
+                        <p class="hero-subtitle mb-5">
+                            Découvrez nos destinations exclusives avec des vols directs au départ de N'Djamena.
+                            Service premium, prix compétitifs, sécurité garantie.
+                        </p>
+                        <div class="hero-actions">
+                            <button class="btn btn-hero-primary me-3" onclick="scrollToBooking()">
+                                <a class="nav-link" routerLink="/reservation">
+                                <i class="fas fa-plane-departure me-2"></i>
+                                Réserver maintenant
+                            </a>
+                            </button>
+                            <button class="btn btn-hero-outline" onclick="showDestinations()">
+                                <i class="fas fa-map-marked-alt me-2"></i>
+                                Nos destinations
+                            </button>
+                        </div>
+                        <div class="hero-stats mt-5">
+                            <div class="row text-center">
+                                <div class="col-4">
+                                    <div class="stat-number">50+</div>
+                                    <div class="stat-label">Destinations</div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="stat-number">10K+</div>
+                                    <div class="stat-label">Clients satisfaits</div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="stat-number">99%</div>
+                                    <div class="stat-label">Ponctualité</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="hero-visual">
+                        <div class="floating-card">
+                            <div class="card border-0 shadow-lg">
+                                <div class="card-body p-4">
+                                    <div class="d-flex align-items-center mb-3">
+                                        <div class="flight-icon">
+                                            <i class="fas fa-plane text-primary"></i>
+                                        </div>
+                                        <div class="ms-3">
+                                            <h6 class="mb-0">Vol TC-001</h6>
+                                            <small class="text-muted">N'Djamena → Paris</small>
+                                        </div>
+                                        <div class="ms-auto">
+                                            <span class="badge bg-success">À l'heure</span>
+                                        </div>
+                                    </div>
+                                    <div class="flight-route">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div class="text-center">
+                                                <div class="time">08:30</div>
+                                                <small>NDJ</small>
+                                            </div>
+                                            <div class="flight-line">
+                                                <div class="line"></div>
+                                                <i class="fas fa-plane-departure"></i>
+                                            </div>
+                                            <div class="text-center">
+                                                <div class="time">14:45</div>
+                                                <small>CDG</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="mt-3 text-center">
+                                        <span class="price">À partir de <strong>450,000 FCFA</strong></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Notifications Container -->
+    <div id="notifications-container" class="position-fixed top-0 end-0 p-3" style="z-index: 1050;"></div>
+
+    <!-- Features Section -->
+    <section class="features-section py-5" id="features">
+        <div class="container">
+            <div class="row text-center mb-5">
+                <div class="col-12">
+                    <h2 class="section-title">Pourquoi choisir Tchad Voyages ?</h2>
+                    <p class="section-subtitle">Une expérience de voyage exceptionnelle vous attend</p>
+                </div>
+            </div>
+            <div class="row g-4">
+                <div class="col-lg-4 col-md-6">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <h4>Sécurité garantie</h4>
+                        <p>Flotte moderne avec maintenance rigoureuse et équipages expérimentés pour votre sécurité.</p>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-6">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <h4>Ponctualité</h4>
+                        <p>99% de nos vols arrivent à l'heure. Votre temps est précieux, nous le respectons.</p>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-6">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-dollar-sign"></i>
+                        </div>
+                        <h4>Prix compétitifs</h4>
+                        <p>Les meilleurs tarifs du marché sans compromis sur la qualité du service.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Destinations Section -->
+    <section class="destinations-section py-5" id="destinations">
+        <div class="container">
+            <div class="row text-center mb-5">
+                <div class="col-12">
+                    <h2 class="section-title">Nos destinations populaires</h2>
+                    <p class="section-subtitle">Découvrez les villes les plus demandées au départ de N'Djamena</p>
+                </div>
+            </div>
+            <div class="row g-4">
+                <div class="col-lg-3 col-md-6">
+                    <div class="destination-card">
+                        <div class="destination-image">
+                            <img src="https://images.unsplash.com/photo-1502602898536-47ad22581b52?w=400&h=300&fit=crop"
+                                alt="Paris">
+                            <div class="destination-overlay">
+                                <div class="destination-price">À partir de 450,000 FCFA</div>
+                            </div>
+                        </div>
+                        <div class="destination-content">
+                            <h5>Paris, France</h5>
+                            <p><i class="fas fa-plane me-2"></i>Vol direct • 6h30</p>
+                            <div class="destination-features">
+                                <span class="feature-tag">3 vols/semaine</span>
+                                <span class="feature-tag">Airbus A320</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <div class="destination-card">
+                        <div class="destination-image">
+                            <img src="https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=400&h=300&fit=crop"
+                                alt="Dubai">
+                            <div class="destination-overlay">
+                                <div class="destination-price">À partir de 380,000 FCFA</div>
+                            </div>
+                        </div>
+                        <div class="destination-content">
+                            <h5>Dubai, EAU</h5>
+                            <p><i class="fas fa-plane me-2"></i>Vol direct • 5h15</p>
+                            <div class="destination-features">
+                                <span class="feature-tag">5 vols/semaine</span>
+                                <span class="feature-tag">Boeing 737</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <div class="destination-card">
+                        <div class="destination-image">
+                            <img src="https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=300&fit=crop"
+                                alt="Addis Ababa">
+                            <div class="destination-overlay">
+                                <div class="destination-price">À partir de 280,000 FCFA</div>
+                            </div>
+                        </div>
+                        <div class="destination-content">
+                            <h5>Addis-Abeba, Éthiopie</h5>
+                            <p><i class="fas fa-plane me-2"></i>Vol direct • 3h45</p>
+                            <div class="destination-features">
+                                <span class="feature-tag">4 vols/semaine</span>
+                                <span class="feature-tag">Airbus A320</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <div class="destination-card">
+                        <div class="destination-image">
+                            <img src="https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=300&fit=crop"
+                                alt="Cairo">
+                            <div class="destination-overlay">
+                                <div class="destination-price">À partir de 320,000 FCFA</div>
+                            </div>
+                        </div>
+                        <div class="destination-content">
+                            <h5>Le Caire, Égypte</h5>
+                            <p><i class="fas fa-plane me-2"></i>Vol direct • 4h20</p>
+                            <div class="destination-features">
+                                <span class="feature-tag">3 vols/semaine</span>
+                                <span class="feature-tag">Boeing 737</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="text-center mt-5">
+                <button class="btn btn-outline-primary btn-lg" onclick="showDestinations()">
+                    <i class="fas fa-globe-africa me-2"></i>
+                    Voir toutes les destinations
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="modern-footer" id="contact">
+        <div class="container">
+            <div class="row g-4">
+                <!-- Company Info -->
+                <div class="col-lg-4 col-md-6">
+                    <div class="footer-brand">
+                        <div class="d-flex align-items-center mb-3">
+                            <i class="fas fa-plane-departure fa-2x text-primary me-3"></i>
+                            <h4 class="mb-0 text-white">TCHAD VOYAGES</h4>
+                        </div>
+                        <p class="text-light mb-4">Votre partenaire de confiance pour découvrir le monde depuis le cœur
+                            de l'Afrique. Des vols sûrs, des prix compétitifs, un service exceptionnel.</p>
+                        <div class="social-links">
+                            <a href="#" class="social-link" title="Facebook">
+                                <i class="fab fa-facebook-f"></i>
+                            </a>
+                            <a href="#" class="social-link" title="Twitter">
+                                <i class="fab fa-twitter"></i>
+                            </a>
+                            <a href="#" class="social-link" title="Instagram">
+                                <i class="fab fa-instagram"></i>
+                            </a>
+                            <a href="#" class="social-link" title="LinkedIn">
+                                <i class="fab fa-linkedin-in"></i>
+                            </a>
+                            <a href="#" class="social-link" title="YouTube">
+                                <i class="fab fa-youtube"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Links -->
+                <div class="col-lg-2 col-md-6">
+                    <h5 class="footer-title">Navigation</h5>
+                    <ul class="footer-links">
+                        <li><a href="#" onclick="goHome()"><i class="fas fa-home me-2"></i>Accueil</a></li>
+                        <li><a href="#" onclick="showDestinations()"><i
+                                    class="fas fa-map-marked-alt me-2"></i>Destinations</a></li>
+                        <li><a href="#" onclick="showPromotions()"><i class="fas fa-tags me-2"></i>Promotions</a></li>
+                        <li><a href="#" onclick="scrollToBooking()"><i class="fas fa-search me-2"></i>Réserver</a></li>
+                    </ul>
+                </div>
+
+                <!-- Destinations -->
+                <div class="col-lg-2 col-md-6">
+                    <h5 class="footer-title">Destinations</h5>
+                    <ul class="footer-links">
+                        <li><a href="#"><i class="fas fa-plane me-2"></i>Paris (CDG)</a></li>
+                        <li><a href="#"><i class="fas fa-plane me-2"></i>Dubai (DXB)</a></li>
+                        <li><a href="#"><i class="fas fa-plane me-2"></i>Addis Ababa (ADD)</a></li>
+                        <li><a href="#"><i class="fas fa-plane me-2"></i>Cairo (CAI)</a></li>
+                    </ul>
+                </div>
+
+                <!-- Contact Info -->
+                <div class="col-lg-4 col-md-6">
+                    <h5 class="footer-title">Contactez-nous</h5>
+                    <div class="contact-info">
+                        <div class="contact-item">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <div>
+                                <strong>Adresse</strong>
+                                <p>Avenue Charles de Gaulle<br>N'Djamena, Tchad</p>
+                            </div>
+                        </div>
+                        <div class="contact-item">
+                            <i class="fas fa-phone"></i>
+                            <div>
+                                <strong>Téléphone</strong>
+                                <p>+235 12 34 56 78</p>
+                            </div>
+                        </div>
+                        <div class="contact-item">
+                            <i class="fas fa-envelope"></i>
+                            <div>
+                                <strong>Email</strong>
+                                <p>contact@tchadvoyages.td</p>
+                            </div>
+                        </div>
+                        <div class="contact-item">
+                            <i class="fas fa-clock"></i>
+                            <div>
+                                <strong>Horaires</strong>
+                                <p>Lun-Ven: 8h-18h<br>Sam: 8h-12h</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bottom Bar -->
+            <div class="footer-bottom">
+                <div class="row align-items-center">
+                    <div class="col-md-6">
+                        <p class="mb-0">&copy; 2024 Tchad Voyages. Tous droits réservés.</p>
+                    </div>
+                    <div class="col-md-6 text-md-end">
+                        <div class="footer-bottom-links">
+                            <a href="#">Politique de confidentialité</a>
+                            <a href="#">Conditions d'utilisation</a>
+                            <a href="#">FAQ</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="ajax.js"></script>
+    <!-- Login Modal -->
+    <div class="modal fade" id="loginModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-sign-in-alt me-2"></i>Connexion</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="login-alert" class="alert alert-danger d-none"></div>
+                    <div class="mb-3">
+                        <label class="form-label">Email</label>
+                        <input type="email" id="login-email" class="form-control" placeholder="email@example.com"
+                            required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Mot de passe</label>
+                        <input type="password" id="login-password" class="form-control" placeholder="••••••••" required>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <button class="btn td-btn-primary" id="login-submit" onclick="submitLogin()">
+                            Se connecter
+                        </button>
+                        <button class="btn btn-link" data-bs-target="#forgotModal" data-bs-toggle="modal"
+                            data-bs-dismiss="modal">
+                            Mot de passe oublié ?
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Forgot Password Modal -->
+    <div class="modal fade" id="forgotModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-unlock-alt me-2"></i>Mot de passe oublié</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="forgot-alert" class="alert alert-danger d-none"></div>
+                    <div id="forgot-success" class="alert alert-success d-none"></div>
+                    <div class="mb-3">
+                        <label class="form-label">Email</label>
+                        <input type="email" id="forgot-email" class="form-control" placeholder="email@example.com"
+                            required>
+                    </div>
+                    <div class="d-flex justify-content-end">
+                        <button class="btn td-btn-primary" id="forgot-submit" onclick="submitForgotPassword()">
+                            Envoyer le lien
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>

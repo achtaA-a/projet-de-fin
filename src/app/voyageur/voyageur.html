@@ -1,0 +1,123 @@
+<!-- Step 2: Traveler Information -->
+@if (currentStep === 2) {
+    <div id="step-2" class="step-content">
+      <h3 class="mb-4">Informations des voyageurs</h3>
+      
+      <!-- Indicateur de voyageur actuel -->
+      @if (flightSearch.passengers > 1) {
+      <div class="traveler-indicator mb-4">
+        <div class="alert alert-info">
+          <i class="fas fa-user me-2"></i>
+          Voyageur {{ currentTravelerIndex + 1 }} sur {{ flightSearch.passengers }}
+        </div>
+      </div>
+      }
+    
+      <form (ngSubmit)="nextStep()" #travelerForm="ngForm">
+        <div class="traveler-form-section">
+          <div class="traveler-form-header">
+            <h4><i class="fas fa-user-circle me-2"></i>Informations personnelles</h4>
+            <p>Tous les champs marqués d'un * sont obligatoires</p>
+          </div>
+    
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label required-field">Prénom</label>
+              <input type="text" class="form-control enhanced-input" 
+                     [(ngModel)]="currentTraveler.firstName" 
+                     name="firstName"
+                     required
+                     (input)="updateTravelerField('firstName', $event)">
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label required-field">Nom</label>
+              <input type="text" class="form-control enhanced-input" 
+                     [(ngModel)]="currentTraveler.lastName" 
+                     name="lastName"
+                     required
+                     (input)="updateTravelerField('lastName', $event)">
+            </div>
+          </div>
+    
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label required-field">Email</label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="fas fa-envelope"></i></span>
+                <input type="email" class="form-control enhanced-input" 
+                       [(ngModel)]="currentTraveler.email" 
+                       name="email"
+                       required
+                       (input)="updateTravelerField('email', $event)">
+              </div>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label required-field">Téléphone</label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="fas fa-phone"></i></span>
+                <input type="tel" class="form-control enhanced-input" 
+                       [(ngModel)]="currentTraveler.phone" 
+                       name="phone"
+                       required
+                       (input)="updateTravelerField('phone', $event)">
+              </div>
+            </div>
+          </div>
+    
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label required-field">Date de naissance</label>
+              <input type="date" class="form-control enhanced-input" 
+                     [(ngModel)]="currentTraveler.dateOfBirth" 
+                     name="dateOfBirth"
+                     required
+                     (change)="updateTravelerField('dateOfBirth', $event)">
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label required-field">Nationalité</label>
+              <select class="form-select enhanced-select" 
+                      [(ngModel)]="currentTraveler.nationality" 
+                      name="nationality"
+                      (change)="updateTravelerField('nationality', $event)">
+                <option value="td">Tchadienne</option>
+                <option value="fr">Française</option>
+                <option value="cm">Camerounaise</option>
+                <option value="other">Autre</option>
+              </select>
+            </div>
+          </div>
+    
+          <!-- Informations de passeport (optionnel) -->
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Numéro de passeport</label>
+              <input type="text" class="form-control enhanced-input" 
+                     [(ngModel)]="currentTraveler.passportNumber" 
+                     name="passportNumber"
+                     (input)="updateTravelerField('passportNumber', $event)"
+                     placeholder="Optionnel">
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Date d'expiration du passeport</label>
+              <input type="date" class="form-control enhanced-input" 
+                     [(ngModel)]="currentTraveler.passportExpiry" 
+                     name="passportExpiry"
+                     (change)="updateTravelerField('passportExpiry', $event)"
+                     placeholder="Optionnel">
+            </div>
+          </div>
+        </div>
+    
+        <div class="step-navigation">
+          <button type="button" class="btn btn-step btn-step-previous" (click)="prevStep()">
+            <i class="fas fa-arrow-left me-2"></i>
+            Retour
+          </button>
+        
+          <button type="submit" class="btn btn-step btn-step-next" [routerLink]="'/paiement'">
+            Continuer <i class="fas fa-arrow-right ms-2"></i>
+          </button>
+        </div>        
+      </form>
+    </div>
+    }

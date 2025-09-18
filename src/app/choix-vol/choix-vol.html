@@ -1,0 +1,151 @@
+<div class="flight-selection-container">
+    <!-- Step 3: Flight Selection -->
+    <div id="step-3" class="step-content">
+      <h3 class="mb-4">Choisissez votre vol</h3>
+  
+      <div class="alert alert-info">
+        <i class="fas fa-info-circle me-2"></i>
+        Vols au départ de N'Djamena (NDJ) vers <span id="selected-destination">{{selectedDestination}}</span>
+      </div>
+      
+      <h5 class="mt-4 mb-3">Aller: <span id="departure-display">{{departureDate}}</span></h5>
+  
+      @for (flight of departureFlights; track flight.id) {
+      <div class="flight-option" [class.selected]="flight.selected" [attr.data-flight-id]="flight.id">
+        <div class="d-flex justify-content-between align-items-center">
+          <div class="flex-grow-1">
+            <div class="d-flex justify-content-between align-items-start">
+              <div>
+                <h5>{{flight.departureTime}} - {{flight.arrivalTime}}</h5>
+                <p class="mb-0">{{flight.route}} • Durée: {{flight.duration}} • {{flight.stops}}</p>
+                <p class="mb-0 text-muted">{{flight.airline}} • {{flight.aircraft}}</p>
+              </div>
+              <button class="btn btn-outline-secondary btn-sm favorite-btn"
+                      (click)="toggleFavorite(flight.id, 'departure')">
+                <i class="far fa-heart" [class.fas]="flight.favorite" [class.text-danger]="flight.favorite"></i>
+              </button>
+            </div>
+          </div>
+          <div class="text-end">
+            <h4 class="price-display">{{flight.price.toLocaleString('fr-FR')}} XAF</h4>
+            <div class="btn-group">
+              <button class="btn td-btn-primary btn-sm" (click)="selectFlight(flight.id, 'departure')">
+                {{flight.selected ? 'Sélectionné' : 'Sélectionner'}}
+              </button>
+              <button class="btn btn-outline-primary btn-sm" (click)="addToComparison(flight)">
+                <i class="fas fa-plus"></i> Comparer
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      }
+  
+      <!-- Return Flights -->
+      <div id="return-flights" class="mt-4">
+        <h5 class="mb-3">Retour: <span id="return-display">{{returnDate}}</span></h5>
+  
+        @for (flight of returnFlights; track flight.id) {
+        <div class="flight-option" [class.selected]="flight.selected" [attr.data-flight-id]="flight.id">
+          <div class="d-flex justify-content-between align-items-center">
+            <div class="flex-grow-1">
+              <div class="d-flex justify-content-between align-items-start">
+                <div>
+                  <h5>{{flight.departureTime}} - {{flight.arrivalTime}}</h5>
+                  <p class="mb-0">{{flight.route}} • Durée: {{flight.duration}} • {{flight.stops}}</p>
+                  <p class="mb-0 text-muted">{{flight.airline}} • {{flight.aircraft}}</p>
+                </div>
+                <button class="btn btn-outline-secondary btn-sm favorite-btn"
+                        (click)="toggleFavorite(flight.id, 'return')">
+                  <i class="far fa-heart" [class.fas]="flight.favorite" [class.text-danger]="flight.favorite"></i>
+                </button>
+              </div>
+            </div>
+            <div class="text-end">
+              <h4 class="price-display">{{flight.price.toLocaleString('fr-FR')}} XAF</h4>
+              <div class="btn-group">
+                <button class="btn td-btn-primary btn-sm" (click)="selectFlight(flight.id, 'return')">
+                  {{flight.selected ? 'Sélectionné' : 'Sélectionner'}}
+                </button>
+                <button class="btn btn-outline-primary btn-sm" (click)="addToComparison(flight)">
+                  <i class="fas fa-plus"></i> Comparer
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+        }
+      </div>
+  
+      <!-- Flight Comparison Panel -->
+      <div id="comparison-panel" class="mt-4" [class.d-none]="comparedFlights.length === 0">
+        <div class="card comparison-card">
+          <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">
+              <i class="fas fa-balance-scale me-2"></i>Comparaison de vols
+              <button class="btn btn-sm btn-outline-light float-end" (click)="clearComparison()">
+                <i class="fas fa-times"></i> Fermer
+              </button>
+            </h5>
+          </div>
+          <div class="card-body">
+            <div class="row">
+              @for (flight of comparedFlights; track flight.id) {
+              <div class="col-md-6 col-lg-4">
+                <div class="flight-card">
+                  <h5>{{flight.departureTime}} - {{flight.arrivalTime}}</h5>
+                  <p class="mb-1">{{flight.route}} • Durée: {{flight.duration}} • {{flight.stops}}</p>
+                  <p class="mb-2 text-muted">{{flight.airline}} • {{flight.aircraft}}</p>
+                  <h4 class="price-display">{{flight.price.toLocaleString('fr-FR')}} XAF</h4>
+                  <button class="btn btn-danger btn-sm" (click)="removeFromComparison(flight.id)">
+                    <i class="fas fa-trash me-1"></i> Retirer
+                  </button>
+                </div>
+              </div>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+  
+      <!-- Baggage Calculator -->
+      <div class="card mt-4 baggage-calculator">
+        <div class="card-header">
+          <h5 class="mb-0"><i class="fas fa-suitcase me-2"></i>Calculateur de bagages</h5>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-6">
+              <label class="form-label">Bagages en cabine</label>
+              <select class="form-select" #cabinSelect (change)="updateBaggageTotal(cabinSelect.value, checkedSelect.value)">
+                <option value="0">Aucun bagage supplémentaire</option>
+                <option value="25000">Bagage cabine 10kg (+25 000 XAF)</option>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Bagages en soute</label>
+              <select class="form-select" #checkedSelect (change)="updateBaggageTotal(cabinSelect.value, checkedSelect.value)">
+                <option value="0">Aucun bagage en soute</option>
+                <option value="45000">Bagage 23kg (+45 000 XAF)</option>
+                <option value="75000">Bagage 32kg (+75 000 XAF)</option>
+              </select>
+            </div>
+          </div>
+          <div class="mt-3">
+            <div class="alert alert-info">
+              <strong>Total bagages: {{baggageTotal.toLocaleString('fr-FR')}} XAF</strong>
+            </div>
+          </div>
+        </div>
+      </div>
+  
+      <div class="d-flex justify-content-between mt-4 navigation-buttons">
+        <button type="button" class="btn btn-secondary" (click)="prevStep(3)">
+          <i class="fas fa-arrow-left me-2"></i> Retour
+        </button>
+        <button type="button" class="btn td-btn-primary" (click)="nextStep(3)">
+          Continuer <i class="fas fa-arrow-right ms-2"></i>
+        </button>
+      </div>
+    </div>
+  </div>

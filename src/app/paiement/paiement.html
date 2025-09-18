@@ -1,0 +1,95 @@
+<div id="step-4" class="step-content">
+    <h3 class="mb-4">Paiement sécurisé</h3>
+  
+    <div class="row">
+      <div class="col-md-7">
+        <div class="card">
+          <div class="card-header bg-light">
+            <h5 class="mb-0">Informations de paiement</h5>
+          </div>
+          <div class="card-body">
+            <form id="payment-form">
+              <div class="mb-3">
+                <label class="form-label">Titulaire de la carte</label>
+                <input type="text" class="form-control" placeholder="Nom comme sur la carte" required>
+              </div>
+  
+              <div class="mb-3">
+                <label class="form-label">Numéro de carte</label>
+                <div class="input-group">
+                  <input #cardNumber type="text" class="form-control" id="card-number"
+                    placeholder="1234 5678 9012 3456" maxlength="23" required
+                    autocomplete="cc-number">
+                  <span class="input-group-text"><i class="fas fa-credit-card"
+                    id="card-type-icon"></i></span>
+                </div>
+                <small class="form-text text-muted">Visa, MasterCard, American Express acceptées</small>
+              </div>
+  
+              <div class="row">
+                <div class="col-md-6 mb-3">
+                  <label class="form-label">Date d'expiration</label>
+                  <input #expiryDate type="text" class="form-control" id="expiry-date" placeholder="MM/AA"
+                    maxlength="5" required autocomplete="cc-exp">
+                  <small class="form-text text-muted">Format: MM/AA</small>
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label class="form-label">CVV</label>
+                  <input #cvv type="text" class="form-control" id="cvv" placeholder="123" maxlength="4"
+                    required autocomplete="cc-csc">
+                  <small class="form-text text-muted">3-4 chiffres au dos</small>
+                </div>
+              </div>
+  
+              <div class="form-check mb-4">
+                <input class="form-check-input" type="checkbox" id="save-card">
+                <label class="form-check-label" for="save-card">
+                  Enregistrer cette carte pour de futurs paiements
+                </label>
+              </div>
+  
+              <button type="button" class="btn td-btn-primary w-100" id="payment-btn"
+                (click)="processPaymentAndContinue()" [disabled]="isProcessing">
+                <span id="payment-btn-text">{{isProcessing ? 'Traitement en cours...' : 'Payer maintenant'}}</span>
+                <i class="fas" [class.fa-lock]="!isProcessing" [class.fa-spinner]="isProcessing" [class.fa-check]="paymentSuccess" id="payment-btn-icon"></i>
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+  
+      <div class="col-md-5">
+        <div class="card">
+          <div class="card-header bg-light">
+            <h5 class="mb-0">Récapitulatif</h5>
+          </div>
+          <div class="card-body">
+            <div class="d-flex justify-content-between mb-2">
+              <span>Vol aller-retour</span>
+              <span>{{flightPrice.toLocaleString('fr-FR')}} XAF</span>
+            </div>
+            <div class="d-flex justify-content-between mb-2">
+              <span>Taxes et frais</span>
+              <span>{{taxes.toLocaleString('fr-FR')}} XAF</span>
+            </div>
+            <hr>
+            <div class="d-flex justify-content-between mb-3">
+              <strong>Total</strong>
+              <strong class="price-display">{{total.toLocaleString('fr-FR')}} XAF</strong>
+            </div>
+  
+            <div class="alert alert-info mt-3">
+              <i class="fas fa-info-circle me-2"></i>
+              <small>Prix total pour 1 passager en classe Économique</small>
+            </div>
+          </div>
+        </div>
+  
+        <div class="d-flex justify-content-between mt-3">
+          <button type="button" class="btn btn-secondary" (click)="prevStep(4)">
+            <i class="fas fa-arrow-left me-2"></i> Retour
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>

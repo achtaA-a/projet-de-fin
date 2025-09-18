@@ -1,0 +1,55 @@
+ <!-- Step 5: Confirmation -->
+ <div id="step-5" class="step-content d-none">
+    <div class="confirmation-card">
+        <div class="mb-4">
+            <i class="fas fa-check-circle fa-5x text-success"></i>
+        </div>
+        <h2 class="mb-3">Réservation confirmée !</h2>
+        <p class="lead">Merci pour votre réservation chez Tchad Voyages</p>
+
+        <div class="confirmation-code">TV7X9B2A</div>
+
+        <div id="email-status" class="mb-3">
+            <div class="d-flex align-items-center">
+                <div class="spinner-border spinner-border-sm text-primary me-2" role="status">
+                    <span class="visually-hidden">Envoi en cours...</span>
+                </div>
+                <span>Envoi de l'email de confirmation en cours...</span>
+            </div>
+        </div>
+
+        <div class="row mt-4">
+            <div class="col-md-6">
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <h5>Détails du vol</h5>
+                        <p class="mb-1"><strong>NDJ - DXB</strong></p>
+                        <p class="mb-1">Jeu. 15 juin 2023 · 08:30</p>
+                        <p class="mb-0">Vol direct · 6h 15m</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <h5>Informations du passager</h5>
+                        <p class="mb-1"><strong>Mahamat Hassan</strong></p>
+                        <p class="mb-1">Classe: Économique</p>
+                        <p class="mb-0">N° de dossier: TV23061578</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <button class="btn td-btn-primary mt-3">
+            <i class="fas fa-download me-2"></i> Télécharger le e-billet
+        </button>
+        <button class="btn btn-outline-primary mt-3 ms-2" onclick="resetBooking()">
+            <i class="fas fa-plus me-2"></i> Nouvelle réservation
+        </button>
+        <button class="btn btn-outline-success mt-3 ms-2" onclick="shareBooking()">
+            <i class="fas fa-share-alt me-2"></i> Partager
+        </button>
+    </div>
+</div>
+
