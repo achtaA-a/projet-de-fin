@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, Location } from '@angular/common';
 
 interface Flight {
   id: string;
@@ -76,6 +76,8 @@ export class ChoixVolComponent implements OnInit {
     }
   ];
 
+  constructor(private location: Location) { }
+
   ngOnInit(): void {
     // Initialisation si nécessaire
   }
@@ -131,7 +133,7 @@ export class ChoixVolComponent implements OnInit {
 
   prevStep(step: number): void {
     console.log(`Naviguer vers l'étape précédente depuis l'étape ${step}`);
-    // Implémentez votre logique de navigation ici
+    this.location.back();
   }
 
   nextStep(step: number): void {

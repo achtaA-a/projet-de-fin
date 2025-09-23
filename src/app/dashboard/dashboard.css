@@ -9,9 +9,16 @@
 
 /* Navigation */
 .navbar {
-    background: linear-gradient(90deg, var(--primary-color), #0a58ca);
+    background: rgba(0, 0, 0, 0.9);
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
     transition: all 0.3s ease;
+    padding: 15px 0;
+}
+
+.navbar.scrolled {
+    background: rgba(0, 0, 0, 0.95) !important;
+    backdrop-filter: blur(10px);
+    padding: 10px 0;
 }
 
 .navbar-brand {
@@ -52,7 +59,7 @@
     background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), 
                 url('https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=1200&auto=format') center/cover no-repeat;
     color: white;
-    padding: 6rem 0;
+    padding: 120px 0 80px;
     position: relative;
     overflow: hidden;
 }
@@ -75,6 +82,7 @@
     font-size: 3.5rem;
     font-weight: 800;
     line-height: 1.2;
+    margin-bottom: 1.5rem;
 }
 
 .text-highlight {
@@ -98,6 +106,7 @@
     font-size: 1.2rem;
     opacity: 0.9;
     max-width: 90%;
+    margin-bottom: 2rem;
 }
 
 .btn-hero-primary {
@@ -107,6 +116,7 @@
     border-radius: 50px;
     font-weight: 600;
     transition: all 0.3s ease;
+    border: none;
 }
 
 .btn-hero-primary:hover {
@@ -122,6 +132,7 @@
     border-radius: 50px;
     font-weight: 600;
     transition: all 0.3s ease;
+    background: transparent;
 }
 
 .btn-hero-outline:hover {
@@ -132,6 +143,8 @@
 
 .hero-stats {
     margin-top: 3rem;
+    padding-top: 2rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .stat-number {
@@ -196,7 +209,8 @@
 
 /* Features Section */
 .features-section {
-    background: #f8f9fa;
+    background: #bdb8b8;
+    padding: 5rem 0;
 }
 
 .section-title {
@@ -204,6 +218,7 @@
     position: relative;
     padding-bottom: 1rem;
     margin-bottom: 1rem;
+    text-align: center;
 }
 
 .section-title::after {
@@ -220,7 +235,8 @@
 .section-subtitle {
     color: #6c757d;
     max-width: 600px;
-    margin: 0 auto;
+    margin: 0 auto 3rem;
+    text-align: center;
 }
 
 .feature-card {
@@ -256,57 +272,10 @@
     font-weight: 600;
 }
 
-/* Flight Selection */
-.step-content {
-    background: white;
-    padding: 2rem;
-    border-radius: 1rem;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
-    margin-bottom: 2rem;
-}
-
-.flight-option {
-    border: 1px solid #dee2e6;
-    border-radius: 0.5rem;
-    padding: 1.5rem;
-    margin-bottom: 1rem;
-    transition: all 0.3s ease;
-}
-
-.flight-option:hover, .flight-option.selected {
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.1);
-}
-
-.favorite-btn {
-    transition: all 0.3s ease;
-}
-
-.favorite-btn:hover, .favorite-btn.active {
-    color: #dc3545;
-}
-
-.price-display {
-    color: var(--primary-color);
-    font-weight: 700;
-}
-
-.td-btn-primary {
-    background: var(--primary-color);
-    color: white;
-    border: none;
-    padding: 0.5rem 1rem;
-    border-radius: 0.375rem;
-    transition: all 0.3s ease;
-}
-
-.td-btn-primary:hover {
-    background: #0a58ca;
-}
-
 /* Destinations Section */
 .destinations-section {
-    background: white;
+    background:#bdb8b8;
+    padding: 5rem 0;
 }
 
 .destination-card {
@@ -315,6 +284,7 @@
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
     transition: all 0.3s ease;
     height: 100%;
+    margin-bottom: 2rem;
 }
 
 .destination-card:hover {
@@ -467,152 +437,34 @@
     display: block;
     margin-bottom: 0.3rem;
 }
-
-.contact-item p {
-    margin: 0;
-    color: #dee2e6;
-}
-
 .footer-bottom {
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
-    margin-top: 3rem;
-    padding: 1.5rem 0;
+    background: #1c1f23;
+    color: #6c757d;
+    text-align: center;
+    padding: 1rem 0;
+    margin-top: 2rem;
+    font-size: 0.9rem;
 }
-
-.footer-bottom-links a {
-    color: #dee2e6;
+.footer-bottom a {
+    color: #ffc107;
     text-decoration: none;
-    margin-left: 1.5rem;
-    transition: all 0.3s ease;
 }
-
-.footer-bottom-links a:hover {
-    color: white;
+.footer-bottom a:hover {
+    text-decoration: underline;
 }
-
-/* Modal Styles */
-.modal-content {
-    border-radius: 1rem;
-    border: none;
-}
-
-.modal-header {
-    border-bottom: 1px solid #dee2e6;
-    padding: 1.5rem;
-}
-
-.modal-body {
-    padding: 1.5rem;
-}
-
-.modal-footer {
-    border-top: 1px solid #dee2e6;
-    padding: 1.5rem;
-}
-
 /* Responsive Adjustments */
-@media (max-width: 992px) {
+@media (max-width: 768px) {
     .hero-title {
         font-size: 2.5rem;
     }
-    
-    .hero-content {
-        text-align: center;
-        margin-bottom: 3rem;
-    }
-    
     .hero-subtitle {
-        margin: 0 auto 2rem;
+        font-size: 1rem;
+    }
+    .hero-stats .col-4 {
+        margin-bottom: 1.5rem;
+    }
+    .feature-card {
+        margin-bottom: 2rem;
     }
 }
 
-@media (max-width: 768px) {
-    .hero-title {
-        font-size: 2rem;
-    }
-    
-    .hero-actions .btn {
-        display: block;
-        width: 100%;
-        margin-bottom: 1rem;
-    }
-    
-    .hero-actions .btn:last-child {
-        margin-bottom: 0;
-    }
-    
-    .footer-bottom-links {
-        margin-top: 1rem;
-    }
-    
-    .footer-bottom-links a {
-        margin: 0 0.5rem;
-    }
-}
-
-/* Dark Mode Support */
-[data-bs-theme="dark"] {
-    --bs-body-bg: #212529;
-    --bs-body-color: #f8f9fa;
-}
-
-[data-bs-theme="dark"] .feature-card,
-[data-bs-theme="dark"] .step-content,
-[data-bs-theme="dark"] .destination-card {
-    background: #343a40;
-    color: #f8f9fa;
-}
-
-[data-bs-theme="dark"] .feature-tag {
-    background: #495057;
-    color: #dee2e6;
-}
-
-[data-bs-theme="dark"] .flight-option {
-    border-color: #495057;
-    background: #343a40;
-}
-
-/* Notifications */
-#notifications-container {
-    position: fixed;
-    top: 1rem;
-    right: 1rem;
-    z-index: 1050;
-}
-
-.notification {
-    padding: 1rem 1.5rem;
-    margin-bottom: 1rem;
-    border-radius: 0.5rem;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-    display: flex;
-    align-items: center;
-    animation: slideIn 0.3s ease;
-}
-
-.notification.success {
-    background: var(--success-color);
-    color: white;
-}
-
-.notification.error {
-    background: #dc3545;
-    color: white;
-}
-
-.notification.info {
-    background: var(--primary-color);
-    color: white;
-}
-
-@keyframes slideIn {
-    from {
-        transform: translateX(100%);
-        opacity: 0;
-    }
-    to {
-        transform: translateX(0);
-        opacity: 1;
-    }
-}

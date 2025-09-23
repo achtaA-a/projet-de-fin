@@ -1,14 +1,15 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
+import { FlightService, Flight } from '../services/flight.service';
 
 interface RecentSearch {
   destination: string;
   departureDate: string;
   returnDate?: string;
   passengers: number;
-  travelClass: string;
+  travelClass: 'economy' | 'business' | 'first';
   timestamp: number;
 }
 
@@ -18,43 +19,55 @@ interface FlightSearch {
   departureDate: string;
   returnDate?: string;
   passengers: number;
-  travelClass: string;
+  travelClass: 'economy' | 'business' | 'first';
 }
 
 @Component({
   selector: 'app-reservation',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink], // ← Ajoutez ces imports
+  imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './reservation.html',
   styleUrls: ['./reservation.css']
 })
 export class ReservationComponent implements OnInit {
-  currentStep: number = 1;
+  currentStep = 1;
   recentSearches: RecentSearch[] = [];
+  availableFlights: Flight[] = [];
+  selectedFlight: Flight | null = null;
+  isLoading = false;
+  errorMessage = '';
+  successMessage = '';
+  progressPercentage = 0;
+
   flightSearch: FlightSearch = {
     departure: "N'Djamena (NDJ)",
     destination: '',
     departureDate: '',
-    returnDate: '',
     passengers: 1,
     travelClass: 'economy'
   };
 
-  // Données des destinations
   destinations = [
+    { code: 'NDJ', name: "N'Djamena (NDJ)" },
     { code: 'DLA', name: 'Douala (DLA)' },
     { code: 'JNB', name: 'Johannesburg (JNB)' },
+    { code: 'CDG', name: 'Paris (CDG)' },
     { code: 'NBO', name: 'Nairobi (NBO)' },
     { code: 'ADD', name: 'Addis-Abeba (ADD)' },
     { code: 'DXB', name: 'Dubai (DXB)' },
-    { code: 'CDG', name: 'Paris (CDG)' },
     { code: 'BRU', name: 'Bruxelles (BRU)' },
     { code: 'ABE', name: 'Abéché (ABE)' }
   ];
 
+  constructor(
+    private router: Router,
+    private flightService: FlightService
+  ) {}
+
   ngOnInit(): void {
     this.loadRecentSearches();
     this.setDefaultDates();
+    this.updateProgressBar();
   }
 
   private setDefaultDates(): void {
@@ -62,14 +75,22 @@ export class ReservationComponent implements OnInit {
     const tomorrow = new Date(today);
     tomorrow.setDate(tomorrow.getDate() + 1);
     
-    this.flightSearch.departureDate = today.toISOString().split('T')[0];
-    this.flightSearch.returnDate = tomorrow.toISOString().split('T')[0];
+    // Formater les dates au format YYYY-MM-DD
+    const formatDate = (date: Date) => date.toISOString().split('T')[0];
+    
+    this.flightSearch.departureDate = formatDate(today);
+    this.flightSearch.returnDate = formatDate(tomorrow);
   }
 
   private loadRecentSearches(): void {
     const savedSearches = localStorage.getItem('recentFlightSearches');
     if (savedSearches) {
-      this.recentSearches = JSON.parse(savedSearches);
+      try {
+        this.recentSearches = JSON.parse(savedSearches);
+      } catch (e) {
+        console.error('Erreur lors du chargement des recherches récentes', e);
+        this.recentSearches = [];
+      }
     }
   }
 
@@ -83,58 +104,102 @@ export class ReservationComponent implements OnInit {
       timestamp: Date.now()
     };
 
-    this.recentSearches.unshift(search);
-    this.recentSearches = this.recentSearches.slice(0, 5);
+    // Ajouter la nouvelle recherche au début du tableau
+    this.recentSearches = [search, ...this.recentSearches]
+      .slice(0, 5); // Garder uniquement les 5 dernières recherches
+
+    // Sauvegarder dans le localStorage
     localStorage.setItem('recentFlightSearches', JSON.stringify(this.recentSearches));
   }
 
-  nextStep(step: number): void {
-    if (step === 1 && !this.validateStep1()) {
+  searchFlights(): void {
+    if (!this.validateSearchForm()) {
       return;
     }
 
-    this.currentStep = step;
-    this.updateProgressBar();
+    this.isLoading = true;
+    this.errorMessage = '';
+    this.availableFlights = [];
 
-    if (step === 2) {
-      this.saveRecentSearch();
-    }
+    this.flightService.searchFlights(this.flightSearch).subscribe({
+      next: (flights) => {
+        this.availableFlights = flights;
+        this.saveRecentSearch();
+        this.nextStep();
+      },
+      error: (error) => {
+        console.error('Erreur lors de la recherche de vols', error);
+        this.errorMessage = 'Une erreur est survenue lors de la recherche de vols. Veuillez réessayer.';
+      },
+      complete: () => {
+        this.isLoading = false;
+      }
+    });
   }
 
-  private validateStep1(): boolean {
+  selectFlight(flight: Flight): void {
+    this.selectedFlight = flight;
+    this.nextStep();
+  }
+
+  confirmBooking(): void {
+    if (!this.selectedFlight) {
+      this.errorMessage = 'Aucun vol sélectionné';
+      return;
+    }
+
+    this.isLoading = true;
+    this.flightService.bookFlight(
+      this.selectedFlight,
+      this.flightSearch.passengers,
+      this.flightSearch.travelClass
+    ).subscribe({
+      next: (booking) => {
+        this.router.navigate(['/confirmation', booking.id]);
+      },
+      error: (error) => {
+        console.error('Erreur lors de la réservation', error);
+        this.errorMessage = 'Une erreur est survenue lors de la réservation. Veuillez réessayer.';
+        this.isLoading = false;
+      }
+    });
+  }
+
+  private validateSearchForm(): boolean {
     if (!this.flightSearch.destination) {
-      this.showNotification('error', 'Veuillez sélectionner une destination');
+      this.errorMessage = 'Veuillez sélectionner une destination';
       return false;
     }
 
     if (!this.flightSearch.departureDate) {
-      this.showNotification('error', 'Veuillez sélectionner une date de départ');
+      this.errorMessage = 'Veuillez sélectionner une date de départ';
       return false;
     }
 
-    if (this.flightSearch.returnDate && 
-        new Date(this.flightSearch.returnDate) < new Date(this.flightSearch.departureDate)) {
-      this.showNotification('error', 'La date de retour doit être après la date de départ');
+    if (this.flightSearch.passengers < 1) {
+      this.errorMessage = 'Le nombre de passagers doit être d\'au moins 1';
       return false;
     }
 
     return true;
   }
 
-  private updateProgressBar(): void {
-    const progressPercentage = (this.currentStep / 5) * 100;
-    const progressBar = document.querySelector('.progress-bar-inner') as HTMLElement;
-    if (progressBar) {
-      progressBar.style.width = `${progressPercentage}%`;
+  nextStep(): void {
+    if (this.currentStep < 4) {
+      this.currentStep++;
+      this.updateProgressBar();
     }
+  }
 
-    document.querySelectorAll('.step').forEach((step, index) => {
-      if (index + 1 <= this.currentStep) {
-        step.classList.add('active');
-      } else {
-        step.classList.remove('active');
-      }
-    });
+  previousStep(): void {
+    if (this.currentStep > 1) {
+      this.currentStep--;
+      this.updateProgressBar();
+    }
+  }
+
+  private updateProgressBar(): void {
+    this.progressPercentage = (this.currentStep - 1) * 33.33;
   }
 
   useRecentSearch(search: RecentSearch): void {
@@ -143,26 +208,15 @@ export class ReservationComponent implements OnInit {
     this.flightSearch.returnDate = search.returnDate;
     this.flightSearch.passengers = search.passengers;
     this.flightSearch.travelClass = search.travelClass;
-  }
-
-  searchFlights(): void {
-    if (this.validateStep1()) {
-      this.showNotification('info', 'Recherche des vols en cours...');
-      setTimeout(() => {
-        this.nextStep(2);
-      }, 1500);
-    }
-  }
-
-  private showNotification(type: 'success' | 'error' | 'info' | 'warning', message: string): void {
-    console.log(`${type}: ${message}`);
+    this.searchFlights();
   }
 
   getDestinationName(code: string): string {
-    const destination = this.destinations.find(dest => dest.code === code);
+    const destination = this.destinations.find(d => d.code === code);
     return destination ? destination.name : code;
   }
 
+  // Méthode pour formater la date en français avec un format court
   formatDate(dateString: string): string {
     if (!dateString) return '';
     
@@ -172,6 +226,18 @@ export class ReservationComponent implements OnInit {
       day: 'numeric',
       month: 'short',
       year: 'numeric'
+    });
+  }
+
+  // Méthode pour formater la date en français avec un format long
+  formatDateLong(dateStr: string): string {
+    if (!dateStr) return '';
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('fr-FR', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
     });
   }
 }

@@ -19,7 +19,7 @@ export class Paiement implements OnInit {
   taxes: number = 75000;
   total: number = this.flightPrice + this.taxes;
   
-  constructor() { }
+  constructor(private location: Location) { };
 
   ngOnInit(): void {
     // Initialisation
@@ -226,6 +226,7 @@ export class Paiement implements OnInit {
 
   // Aller à l'étape précédente
   prevStep(step: number): void {
+    
     // Implémenter la navigation vers l'étape précédente
     console.log(`Retour à l'étape: ${step - 1}`);
   }

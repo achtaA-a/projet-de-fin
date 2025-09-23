@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 
@@ -44,6 +44,8 @@ export class VoyageurComponent implements OnInit {
   currentTravelers: Traveler[] = [];
   currentTraveler: Traveler = this.createEmptyTraveler();
   currentTravelerIndex: number = 0;
+
+  constructor(private location: Location) { }
 
   ngOnInit(): void {
     this.loadFlightSearch();
@@ -170,6 +172,7 @@ export class VoyageurComponent implements OnInit {
   }
 
   prevStep(): void {
+    this.location.back();
     // Émettre un événement ou naviguer vers l'étape précédente
     console.log('Retour à l\'étape précédente');
   }
