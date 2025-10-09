@@ -1,149 +1,872 @@
-<!-- Booking Card -->
-<section class="booking-section py-5" id="booking">
+<!-- Section de réservation -->
+<section class="section" id="booking">
     <div class="container">
-        <div class="booking-card">
-            <div class="booking-header text-center mb-4">
-                <h2 class="booking-title">
-                    <i class="fas fa-plane-departure me-3"></i>
+        <div class="card">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <i class="fas fa-plane-departure me-2"></i>
                     Réservez votre vol
                 </h2>
-                <p class="booking-subtitle">Trouvez et réservez votre vol en quelques clics</p>
+                <p class="text-muted">Trouvez et réservez votre vol en quelques clics</p>
             </div>
 
-            <div class="step-progress mb-5">
-                <div class="progress-bar-inner" [style.width]="(currentStep / 5) * 100 + '%'"></div>
-                <div class="step" [class.active]="currentStep >= 1">
+            <!-- Barre de progression -->
+            <div class="steps-container mb-4">
+                <div class="step" [class.active]="currentStep === 1" [class.completed]="currentStep > 1">
                     <div class="step-number">1</div>
                     <div class="step-label">Recherche</div>
                 </div>
-                <div class="step" [class.active]="currentStep >= 2">
+                <div class="step" [class.active]="currentStep === 2" [class.completed]="currentStep > 2">
                     <div class="step-number">2</div>
                     <div class="step-label">Voyageurs</div>
                 </div>
-                <div class="step" [class.active]="currentStep >= 3">
+                <div class="step" [class.active]="currentStep === 3" [class.completed]="currentStep > 3">
                     <div class="step-number">3</div>
                     <div class="step-label">Options</div>
                 </div>
-                <div class="step" [class.active]="currentStep >= 4">
+                <div class="step" [class.active]="currentStep === 4" [class.completed]="currentStep > 4">
                     <div class="step-number">4</div>
                     <div class="step-label">Paiement</div>
                 </div>
-                <div class="step" [class.active]="currentStep >= 5">
+                <div class="step" [class.active]="currentStep === 5">
                     <div class="step-number">5</div>
                     <div class="step-label">Confirmation</div>
                 </div>
             </div>
 
-            <!-- Step 1: Flight Search -->
-            @if (currentStep === 1) {
-            <div id="step-1" class="step-content">
-                <h3 class="mb-4">Recherchez votre vol</h3>
+            <!-- Étape 1: Recherche de vol -->
+            <div *ngIf="currentStep === 1" id="step-1" class="step-content">
+                <h3 class="mb-4 text-center">Recherchez votre vol</h3>
 
-                <!-- Recent Searches -->
-                @if (recentSearches.length > 0) {
-                <div id="recent-searches" class="mb-4">
-                    <h5 class="mb-3"><i class="fas fa-history me-2"></i>Recherches récentes</h5>
-                    <div class="d-flex flex-wrap gap-2">
-                        @for (search of recentSearches; track search.timestamp) {
-                        <div class="recent-search-item" (click)="useRecentSearch(search)">
-                            <div class="fw-bold">{{ getDestinationName(search.destination) }}</div>
-                            <div class="small">{{ formatDate(search.departureDate) }}</div>
-                            @if (search.returnDate) {
-                            <div class="small">Retour: {{ formatDate(search.returnDate) }}</div>
-                            }
+                <!-- Recherches récentes -->
+                <div *ngIf="recentSearches.length > 0" class="card mb-4">
+                    <div class="card-body">
+                        <h5 class="mb-3"><i class="fas fa-history me-2"></i>Recherches récentes</h5>
+                        <div class="d-flex flex-wrap gap-3">
+                            <div *ngFor="let search of recentSearches" class="recent-search-item p-3 border rounded" 
+                                 (click)="useRecentSearch(search)" style="cursor: pointer;">
+                                <div class="fw-bold text-primary">{{ getDestinationName(search.destination) }}</div>
+                                <div class="text-muted small">{{ formatDate(search.departureDate) }}</div>
+                                <div *ngIf="search.returnDate" class="text-muted small">
+                                    Retour: {{ formatDate(search.returnDate) }}
+                                </div>
+                                <div class="mt-1">
+                                    <span class="badge bg-secondary">
+                                        {{ search.passengers }} {{ search.passengers > 1 ? 'voyageurs' : 'voyageur' }}
+                                    </span>
+                                    <span class="badge ms-1" 
+                                          [ngClass]="{
+                                            'bg-info text-dark': search.travelClass === 'economy',
+                                            'bg-warning': search.travelClass === 'business',
+                                            'bg-dark': search.travelClass === 'first'
+                                          }">
+                                        {{ search.travelClass === 'economy' ? 'Éco' : 
+                                           search.travelClass === 'business' ? 'Affaires' : 'Première' }}
+                                    </span>
+                                </div>
+                            </div>
                         </div>
-                        }
                     </div>
                 </div>
-                }
 
-                <form (ngSubmit)="searchFlights()" #searchForm="ngForm">
+                <form (ngSubmit)="searchFlights(searchForm); $event.preventDefault()" #searchForm="ngForm" class="mt-4">
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label class="form-label">Ville de départ</label>
                             <div class="input-group">
-                                <span class="input-group-text"><i class="fas fa-plane-departure"></i></span>
-                                <input type="text" class="form-control" value="N'Djamena (NDJ)" readonly>
+                                <span class="input-group-text bg-light"><i class="fas fa-plane-departure"></i></span>
+                                <input type="text" class="form-control" name="departure" [(ngModel)]="flightSearch.departure" value="NDJ" readonly>
                             </div>
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label class="form-label">Ville de destination</label>
-                            <div class="input-group">
-                                <span class="input-group-text"><i class="fas fa-plane-arrival"></i></span>
+                            <label class="form-label">Ville de destination <span class="text-danger">*</span></label>
+                            <div class="input-group" [class.is-invalid]="searchForm.submitted && (destination.invalid || !flightSearch.destination)">
+                                <span class="input-group-text bg-light"><i class="fas fa-plane-arrival"></i></span>
                                 <select class="form-select" id="destination" 
                                         [(ngModel)]="flightSearch.destination" 
-                                        name="destination" required>
+                                        name="destination" 
+                                        required
+                                        #destination="ngModel">
                                     <option value="">Sélectionnez une destination</option>
-                                    @for (dest of destinations; track dest.code) {
-                                    <option [value]="dest.code">{{ dest.name }}</option>
-                                    }
+                                    <option *ngFor="let dest of destinations" [value]="dest.code">
+                                        {{ dest.name }} ({{ dest.code }})
+                                    </option>
                                 </select>
+                            </div>
+                            <div *ngIf="searchForm.submitted && destination.invalid" class="invalid-feedback d-block">
+                                Veuillez sélectionner une destination
                             </div>
                         </div>
                     </div>
+
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label class="form-label">Date de départ</label>
+                            <label class="form-label">Date de départ <span class="text-danger">*</span></label>
                             <div class="input-group">
-                                <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
-                                <input type="date" class="form-control" id="departure-date"
+                                <span class="input-group-text bg-light"><i class="far fa-calendar-alt"></i></span>
+                                <input type="date" class="form-control" 
                                        [(ngModel)]="flightSearch.departureDate" 
-                                       name="departureDate" required>
+                                       name="departureDate" 
+                                       [min]="today"
+                                       required>
                             </div>
                         </div>
                         <div class="col-md-6 mb-3">
                             <label class="form-label">Date de retour (optionnel)</label>
                             <div class="input-group">
-                                <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
-                                <input type="date" class="form-control" id="return-date"
+                                <span class="input-group-text bg-light"><i class="far fa-calendar-alt"></i></span>
+                                <input type="date" class="form-control" 
                                        [(ngModel)]="flightSearch.returnDate" 
-                                       name="returnDate">
+                                       name="returnDate"
+                                       [min]="flightSearch.departureDate || today">
                             </div>
                         </div>
                     </div>
+
                     <div class="row">
                         <div class="col-md-4 mb-3">
-                            <label class="form-label">Passagers</label>
-                            <div class="input-group">
-                                <span class="input-group-text"><i class="fas fa-users"></i></span>
-                                <select class="form-select" id="passengers"
+                            <label class="form-label">Passagers <span class="text-danger">*</span></label>
+                            <div class="input-group" [class.is-invalid]="searchForm.submitted && (passengers.invalid || !flightSearch.passengers)">
+                                <span class="input-group-text bg-light"><i class="fas fa-users"></i></span>
+                                <select class="form-select" 
                                         [(ngModel)]="flightSearch.passengers" 
-                                        name="passengers">
-                                    <option value="1">1 Passager</option>
-                                    <option value="2">2 Passagers</option>
-                                    <option value="3">3 Passagers</option>
-                                    <option value="4">4 Passagers</option>
-                                    <option value="5">5 Passagers</option>
+                                        name="passengers" 
+                                        #passengers="ngModel"
+                                        required>
+                                    <option *ngFor="let i of [1,2,3,4,5,6,7,8,9]" [value]="i">
+                                        {{ i }} {{ i > 1 ? 'voyageurs' : 'voyageur' }}
+                                    </option>
                                 </select>
+                            </div>
+                            <div *ngIf="searchForm.submitted && passengers.invalid" class="invalid-feedback">
+                                Veuillez sélectionner le nombre de passagers
                             </div>
                         </div>
                         <div class="col-md-4 mb-3">
-                            <label class="form-label">Classe</label>
-                            <div class="input-group">
-                                <span class="input-group-text"><i class="fas fa-chair"></i></span>
-                                <select class="form-select" id="class"
+                            <label class="form-label">Classe <span class="text-danger">*</span></label>
+                            <div class="input-group" [class.is-invalid]="searchForm.submitted && (travelClass.invalid || !flightSearch.travelClass)">
+                                <span class="input-group-text bg-light"><i class="fas fa-chair"></i></span>
+                                <select class="form-select" 
                                         [(ngModel)]="flightSearch.travelClass" 
-                                        name="travelClass">
+                                        name="travelClass" 
+                                        #travelClass="ngModel"
+                                        required>
                                     <option value="economy">Économique</option>
                                     <option value="business">Affaires</option>
-                                    <option value="first">Première</option>
+                                    <option value="first">Première classe</option>
                                 </select>
                             </div>
                         </div>
-                        <div class="col-md-4 mb-3">
-                            <label class="form-label">&nbsp;</label>
-                            <button type="submit" class="btn btn-td-primary w-100">
-                                <a class="nav-link" routerLink="/voyageur">
-                                Continuer </a> <i class="fas fa-arrow-right ms-2"></i>
-                            </button>
-                            
-                        </div>
+                    </div>
+
+                    <div class="text-center mt-4">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-search me-2"></i> Rechercher des vols
+                        </button>
                     </div>
                 </form>
             </div>
-            }
 
-            <!-- Ajoutez les autres étapes ici -->
+            <!-- Étape 2: Sélection des vols -->
+            <div *ngIf="currentStep === 2" id="step-2" class="step-content">
+                <h3 class="mb-4 text-center">Sélectionnez votre vol</h3>
+                
+                <div *ngIf="isLoading" class="text-center py-5">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Chargement...</span>
+                    </div>
+                    <p class="mt-3">Recherche des vols en cours...</p>
+                </div>
+
+                <div *ngIf="!isLoading && availableFlights.length === 0" class="text-center py-5">
+                    <i class="fas fa-plane-slash fa-3x text-muted mb-3"></i>
+                    <h5>Aucun vol disponible</h5>
+                    <p class="text-muted">Aucun vol ne correspond à vos critères de recherche.</p>
+                    <button class="btn btn-outline-primary" (click)="currentStep = 1">
+                        <i class="fas fa-arrow-left me-2"></i> Modifier la recherche
+                    </button>
+                </div>
+
+                <div *ngIf="!isLoading && availableFlights.length > 0" class="flights-list">
+                    <div *ngFor="let flight of availableFlights" 
+                         class="card mb-3 flight-card" 
+                         [class.selected]="selectedFlight?.id === flight.id" 
+                         [class.recommended]="isRecommended(flight)" 
+                         (click)="selectFlight(flight)">
+                        
+                        <div *ngIf="isRecommended(flight)" class="recommended-badge">
+                            <i class="fas fa-star"></i> Recommandé
+                        </div>
+                        
+                        <div class="card-body p-3">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <div class="airline-info d-flex align-items-center">
+                                    <div class="airline-logo-container me-3">
+                                        <img [src]="'assets/airlines/' + flight.airline.toLowerCase() + '.png'" 
+                                             [alt]="flight.airline"
+                                             class="airline-logo">
+                                    </div>
+                                    <div>
+                                        <div class="fw-bold">{{ flight.airline }}</div>
+                                        <div class="text-muted small">Vol {{ flight.flightNumber }}</div>
+                                    </div>
+                                </div>
+                                <div class="price">
+                                    <div class="text-end">
+                                        <div class="h5 mb-0">{{ flight.price | currency:'XAF':'symbol':'1.0-0' }}</div>
+                                        <div class="text-muted small">TTC/par pers.</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="flight-route d-flex justify-content-between align-items-center my-3">
+                                <div class="departure text-center">
+                                    <div class="time">{{ flight.departureTime | date:'HH:mm' }}</div>
+                                    <div class="airport fw-bold">{{ flight.departure }}</div>
+                                    <div class="date">{{ flight.departureTime | date:'EEE d MMM yyyy' }}</div>
+                                </div>
+                                
+                                <div class="route-line">
+                                    <div class="stops">
+                                        <span class="badge bg-light text-dark">
+                                            {{ flight.stops === 0 ? 'Direct' : flight.stops + ' escale' + (flight.stops > 1 ? 's' : '') }}
+                                        </span>
+                                    </div>
+                                    <div class="duration">
+                                        <i class="fas fa-clock"></i> {{ flight.duration | duration }}
+                                    </div>
+                                    <div class="path">
+                                        <div class="path-line"></div>
+                                        <div class="path-plane"><i class="fas fa-plane"></i></div>
+                                    </div>
+                                </div>
+                                
+                                <div class="arrival text-center">
+                                    <div class="time">{{ flight.arrivalTime | date:'HH:mm' }}</div>
+                                    <div class="airport fw-bold">{{ flight.destination }}</div>
+                                    <div class="date">{{ flight.arrivalTime | date:'EEE d MMM yyyy' }}</div>
+                                </div>
+                            </div>
+                            
+                            <div class="row mt-3 pt-3 border-top">
+                                <div class="col-md-7">
+                                    <div class="flight-details d-flex flex-wrap gap-3">
+                                        <span class="d-flex align-items-center" 
+                                              [ngbTooltip]="'Bagage cabine: ' + (flight.cabinBaggage || '1 x 7kg') + '\nBagage en soute: ' + (flight.checkedBaggage || '1 x 23kg')">
+                                            <i class="fas fa-suitcase me-1 text-muted"></i> 
+                                            {{ flight.checkedBaggage || '1 x 23kg' }}
+                                        </span>
+                                        <span class="d-flex align-items-center">
+                                            <i class="fas fa-utensils me-1 text-muted"></i> 
+                                            {{ flight.meal ? 'Repas inclus' : 'Repas payant' }}
+                                        </span>
+                                        <span class="d-flex align-items-center" *ngIf="flight.wifi">
+                                            <i class="fas fa-wifi me-1 text-muted"></i> WiFi
+                                        </span>
+                                        <span class="d-flex align-items-center" *ngIf="flight.powerOutlets">
+                                            <i class="fas fa-plug me-1 text-muted"></i> Prise électrique
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="col-md-5 text-end">
+                                    <button class="btn btn-outline-primary" (click)="viewFlightDetails(flight); $event.stopPropagation()">
+                                        <i class="fas fa-info-circle me-1"></i> Détails
+                                    </button>
+                                    <button class="btn btn-primary ms-2" (click)="selectFlight(flight); $event.stopPropagation()">
+                                        <i class="fas fa-check me-1"></i> Sélectionner
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="d-flex justify-content-between mt-4">
+                    <button class="btn btn-outline-secondary" (click)="previousStep()">
+                        <i class="fas fa-arrow-left me-2"></i> Retour
+                    </button>
+                    <button class="btn btn-primary" 
+                            [disabled]="!selectedFlight"
+                            (click)="nextStep()">
+                        Continuer <i class="fas fa-arrow-right ms-2"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Étape 3: Informations des passagers -->
+            <div *ngIf="currentStep === 3" id="step-3" class="step-content">
+                <h3 class="mb-4 text-center">Informations des passagers</h3>
+                
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Veuillez renseigner les informations pour chaque passager.
+                </div>
+                
+                <div *ngFor="let passenger of passengers; let i = index" class="card mb-4">
+                    <div class="card-header bg-light">
+                        <h5 class="mb-0">Passager {{ i + 1 }} - {{ passenger.type === 'adult' ? 'Adulte' : 'Enfant' }}</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-2 mb-3">
+                                <label class="form-label">Civilité <span class="text-danger">*</span></label>
+                                <select class="form-select" [(ngModel)]="passenger.title" name="title{{i}}" required>
+                                    <option value="M.">M.</option>
+                                    <option value="Mme">Mme</option>
+                                    <option value="Mlle">Mlle</option>
+                                </select>
+                            </div>
+                            <div class="col-md-5 mb-3">
+                                <label class="form-label">Nom <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" 
+                                       [(ngModel)]="passenger.lastName" 
+                                       name="lastName{{i}}" 
+                                       required>
+                            </div>
+                            <div class="col-md-5 mb-3">
+                                <label class="form-label">Prénom(s) <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" 
+                                       [(ngModel)]="passenger.firstName" 
+                                       name="firstName{{i}}" 
+                                       required>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Date de naissance <span class="text-danger">*</span></label>
+                                <input type="date" class="form-control" 
+                                       [max]="today"
+                                       [(ngModel)]="passenger.birthDate" 
+                                       name="birthDate{{i}}" 
+                                       required>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Nationalité <span class="text-danger">*</span></label>
+                                <select class="form-select" 
+                                        [(ngModel)]="passenger.nationality" 
+                                        name="nationality{{i}}" 
+                                        required>
+                                    <option value="">Sélectionner</option>
+                                    <option *ngFor="let country of countries" [value]="country.code">
+                                        {{ country.name }}
+                                    </option>
+                                </select>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Numéro de passeport/CNI <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" 
+                                       [(ngModel)]="passenger.passportNumber" 
+                                       name="passportNumber{{i}}" 
+                                       required>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Email <span class="text-danger">*</span></label>
+                                <input type="email" class="form-control" 
+                                       [(ngModel)]="passenger.email" 
+                                       name="email{{i}}" 
+                                       required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Téléphone <span class="text-danger">*</span></label>
+                                <input type="tel" class="form-control" 
+                                       [(ngModel)]="passenger.phone" 
+                                       name="phone{{i}}" 
+                                       required>
+                            </div>
+                        </div>
+                        
+                        <div *ngIf="passenger.type === 'adult'" class="form-check mt-2">
+                            <input class="form-check-input" type="checkbox" 
+                                   [(ngModel)]="passenger.frequentFlyer" 
+                                   id="frequentFlyer{{i}}">
+                            <label class="form-check-label" for="frequentFlyer{{i}}">
+                                Programme de fidélité (optionnel)
+                            </label>
+                        </div>
+                        
+                        <div *ngIf="passenger.frequentFlyer" class="row mt-2">
+                            <div class="col-md-6">
+                                <label class="form-label">Compagnie aérienne</label>
+                                <input type="text" class="form-control" 
+                                       [(ngModel)]="passenger.ffAirline" 
+                                       name="ffAirline{{i}}">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Numéro de membre</label>
+                                <input type="text" class="form-control" 
+                                       [(ngModel)]="passenger.ffNumber" 
+                                       name="ffNumber{{i}}">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="d-flex justify-content-between mt-4">
+                    <button class="btn btn-outline-secondary" (click)="previousStep()">
+                        <i class="fas fa-arrow-left me-2"></i> Retour
+                    </button>
+                    <button class="btn btn-primary" (click)="validatePassengers()">
+                        Continuer <i class="fas fa-arrow-right ms-2"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Étape 4: Paiement -->
+            <div *ngIf="currentStep === 4" id="step-4" class="step-content">
+                <h3 class="mb-4 text-center">Paiement sécurisé</h3>
+                
+                <div class="row">
+                    <div class="col-lg-8">
+                        <div class="card mb-4">
+                            <div class="card-header bg-light">
+                                <h5 class="mb-0">Détails de paiement</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="alert alert-info">
+                                    <i class="fas fa-lock me-2"></i>
+                                    Toutes les transactions sont sécurisées et cryptées
+                                </div>
+                                
+                                <div class="mb-4">
+                                    <label class="form-label">Type de carte <span class="text-danger">*</span></label>
+                                    <div class="d-flex gap-2 mb-3">
+                                        <button type="button" class="btn btn-outline-primary" 
+                                                [class.active]="paymentMethod === 'visa'"
+                                                (click)="paymentMethod = 'visa'">
+                                            <i class="fab fa-cc-visa fa-2x"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-outline-primary"
+                                                [class.active]="paymentMethod === 'mastercard'"
+                                                (click)="paymentMethod = 'mastercard'">
+                                            <i class="fab fa-cc-mastercard fa-2x"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-outline-primary"
+                                                [class.active]="paymentMethod === 'paypal'"
+                                                (click)="paymentMethod = 'paypal'">
+                                            <i class="fab fa-cc-paypal fa-2x"></i>
+                                        </button>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label class="form-label">Numéro de carte <span class="text-danger">*</span></label>
+                                        <div class="input-group">
+                                            <span class="input-group-text"><i class="far fa-credit-card"></i></span>
+                                            <input type="text" class="form-control" 
+                                                   [(ngModel)]="cardNumber" 
+                                                   name="cardNumber" 
+                                                   placeholder="1234 5678 9012 3456"
+                                                   required>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label">Date d'expiration <span class="text-danger">*</span></label>
+                                            <input type="text" class="form-control" 
+                                                   [(ngModel)]="cardExpiry" 
+                                                   name="cardExpiry" 
+                                                   placeholder="MM/AA"
+                                                   required>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label">Cryptogramme (CVV) <span class="text-danger">*</span></label>
+                                            <input type="text" class="form-control" 
+                                                   [(ngModel)]="cardCvv" 
+                                                   name="cardCvv" 
+                                                   placeholder="123"
+                                                   required>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label class="form-label">Nom du titulaire <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" 
+                                               [(ngModel)]="cardHolderName" 
+                                               name="cardHolderName" 
+                                               placeholder="Comme indiqué sur la carte"
+                                               required>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-check mb-4">
+                                    <input class="form-check-input" type="checkbox" 
+                                           [(ngModel)]="saveCard" 
+                                           id="saveCard">
+                                    <label class="form-check-label" for="saveCard">
+                                        Enregistrer cette carte pour des paiements futurs
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="card mb-4">
+                            <div class="card-header bg-light">
+                                <h5 class="mb-0">Adresse de facturation</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="form-check mb-3">
+                                    <input class="form-check-input" type="checkbox" 
+                                           [(ngModel)]="sameAsPassenger" 
+                                           id="sameAsPassenger"
+                                           (change)="updateBillingAddress()">
+                                    <label class="form-check-label" for="sameAsPassenger">
+                                        Même adresse que le passager principal
+                                    </label>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Pays <span class="text-danger">*</span></label>
+                                        <select class="form-select" 
+                                                [(ngModel)]="billingAddress.country" 
+                                                name="billingCountry" 
+                                                required>
+                                            <option value="">Sélectionner un pays</option>
+                                            <option *ngFor="let country of countries" [value]="country.code">
+                                                {{ country.name }}
+                                            </option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Ville <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" 
+                                               [(ngModel)]="billingAddress.city" 
+                                               name="billingCity" 
+                                               required>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label">Adresse <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control mb-2" 
+                                           [(ngModel)]="billingAddress.address1" 
+                                           name="billingAddress1" 
+                                           placeholder="Adresse ligne 1"
+                                           required>
+                                    <input type="text" class="form-control" 
+                                           [(ngModel)]="billingAddress.address2" 
+                                           name="billingAddress2" 
+                                           placeholder="Adresse ligne 2 (optionnel)">
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Code postal <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" 
+                                               [(ngModel)]="billingAddress.postalCode" 
+                                               name="billingPostalCode" 
+                                               required>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Téléphone <span class="text-danger">*</span></label>
+                                        <input type="tel" class="form-control" 
+                                               [(ngModel)]="billingAddress.phone" 
+                                               name="billingPhone" 
+                                               required>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-lg-4">
+                        <div class="card mb-4">
+                            <div class="card-header bg-light">
+                                <h5 class="mb-0">Récapitulatif</h5>
+                            </div>
+                            <div class="card-body">
+                                <h6 class="mb-3">Détails du vol</h6>
+                                <div class="flight-summary mb-3">
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span class="text-muted">Aller</span>
+                                        <span class="fw-bold">{{ selectedFlight?.departure }} → {{ selectedFlight?.destination }}</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between">
+                                        <div>
+                                            <div class="text-muted small">Date</div>
+                                            <div>{{ selectedFlight?.departureTime | date:'EEE d MMM yyyy' }}</div>
+                                        </div>
+                                        <div class="text-end">
+                                            <div class="text-muted small">Vol</div>
+                                            <div>{{ selectedFlight?.airline }} {{ selectedFlight?.flightNumber }}</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div *ngIf="flightSearch.returnDate" class="mt-3 pt-3 border-top">
+                                        <div class="d-flex justify-content-between mb-2">
+                                            <span class="text-muted">Retour</span>
+                                            <span class="fw-bold">{{ selectedFlight?.destination }} → {{ selectedFlight?.departure }}</span>
+                                        </div>
+                                        <div class="d-flex justify-content-between">
+                                            <div>
+                                                <div class="text-muted small">Date</div>
+                                                <div>{{ flightSearch.returnDate | date:'EEE d MMM yyyy' }}</div>
+                                            </div>
+                                            <div class="text-end">
+                                                <div class="text-muted small">Vol</div>
+                                                <div>{{ selectedFlight?.airline }} {{ selectedFlight?.returnFlightNumber }}</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <h6 class="mt-4 mb-3">Détails des passagers</h6>
+                                <div *ngFor="let p of passengers" class="passenger-summary mb-2">
+                                    <div class="d-flex justify-content-between">
+                                        <span>{{ p.title }} {{ p.firstName }} {{ p.lastName }}</span>
+                                        <span class="text-nowrap">{{ p.type === 'adult' ? 'Adulte' : 'Enfant' }}</span>
+                                    </div>
+                                    <div class="text-muted small">{{ p.passportNumber }}</div>
+                                </div>
+                                
+                                <div class="mt-4 pt-3 border-top">
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span>Prix du vol</span>
+                                        <span>{{ calculateTotal() | currency:'XAF':'symbol':'1.0-0' }}</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span>Frais de service</span>
+                                        <span>{{ 5000 | currency:'XAF':'symbol':'1.0-0' }}</span>
+                                    </div>
+                                    <div *ngIf="selectedSeats.length > 0" class="d-flex justify-content-between mb-2">
+                                        <span>Siège(s) réservé(s)</span>
+                                        <span>{{ selectedSeats.length * 3000 | currency:'XAF':'symbol':'1.0-0' }}</span>
+                                    </div>
+                                    <div *ngIf="selectedMeals.length > 0" class="d-flex justify-content-between mb-2">
+                                        <span>Repas à bord</span>
+                                        <span>{{ selectedMeals.length * 2500 | currency:'XAF':'symbol':'1.0-0' }}</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between fw-bold mt-3 pt-2 border-top">
+                                        <span>Total</span>
+                                        <span class="text-primary">{{ calculateGrandTotal() | currency:'XAF':'symbol':'1.0-0' }}</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-check mt-4">
+                                    <input class="form-check-input" type="checkbox" 
+                                           [(ngModel)]="termsAccepted" 
+                                           id="termsAccepted"
+                                           required>
+                                    <label class="form-check-label small" for="termsAccepted">
+                                        J'accepte les <a href="#" class="text-primary">conditions générales</a> et la 
+                                        <a href="#" class="text-primary">politique de remboursement</a>
+                                    </label>
+                                </div>
+                                
+                                <button class="btn btn-primary w-100 mt-3" 
+                                        [disabled]="!termsAccepted || isProcessingPayment"
+                                        (click)="processPayment()">
+                                    <span *ngIf="!isProcessingPayment; else processing">
+                                        Payer maintenant {{ calculateGrandTotal() | currency:'XAF':'symbol':'1.0-0' }}
+                                    </span>
+                                    <ng-template #processing>
+                                        <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                                        Traitement...
+                                    </ng-template>
+                                </button>
+                                
+                                <div class="secure-payment mt-3 text-center">
+                                    <i class="fas fa-lock me-1"></i>
+                                    <span class="small text-muted">Paiement sécurisé avec cryptage SSL</span>
+                                    <div class="payment-methods mt-2">
+                                        <i class="fab fa-cc-visa fa-2x me-2"></i>
+                                        <i class="fab fa-cc-mastercard fa-2x me-2"></i>
+                                        <i class="fab fa-cc-paypal fa-2x"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="card">
+                            <div class="card-body">
+                                <h6 class="mb-3">Besoin d'aide ?</h6>
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="icon-circle bg-primary text-white me-3">
+                                        <i class="fas fa-phone-alt"></i>
+                                    </div>
+                                    <div>
+                                        <div class="small text-muted">Appelez-nous</div>
+                                        <div class="fw-bold">+235 XX XX XX XX</div>
+                                    </div>
+                                </div>
+                                <div class="d-flex align-items-center">
+                                    <div class="icon-circle bg-primary text-white me-3">
+                                        <i class="far fa-envelope"></i>
+                                    </div>
+                                    <div>
+                                        <div class="small text-muted">Écrivez-nous</div>
+                                        <div class="fw-bold">contact@tchadvoyage.td</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="d-flex justify-content-between">
+                    <button class="btn btn-outline-secondary" (click)="previousStep()">
+                        <i class="fas fa-arrow-left me-2"></i> Retour
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Étape 5: Confirmation -->
+            <div *ngIf="currentStep === 5" id="step-5" class="step-content">
+                <div class="text-center py-5">
+                    <div class="mb-4">
+                        <div class="checkmark-circle">
+                            <div class="checkmark"></div>
+                        </div>
+                    </div>
+                    
+                    <h2 class="mb-3">Réservation confirmée !</h2>
+                    <p class="lead text-muted mb-4">Merci pour votre confiance, {{ passengers[0]?.firstName }} !</p>
+                    
+                    <div class="booking-reference mb-4">
+                        <div class="badge bg-light text-dark p-3">
+                            <i class="fas fa-ticket-alt me-2"></i>
+                            <span class="h5 mb-0">N° de réservation: <strong>{{ bookingReference }}</strong></span>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-info text-start mx-auto" style="max-width: 600px;">
+                        <h5><i class="fas fa-envelope me-2"></i>E-mail de confirmation envoyé</h5>
+                        <p class="mb-0">
+                            Nous avons envoyé les détails de votre réservation à 
+                            <strong>{{ passengers[0]?.email }}</strong>. 
+                            Vérifiez votre boîte de réception et vos spams.
+                        </p>
+                    </div>
+                    
+                    <div class="card mt-4 mx-auto" style="max-width: 600px;">
+                        <div class="card-body">
+                            <h5 class="card-title mb-4">Récapitulatif de votre réservation</h5>
+                            
+                            <div class="flight-summary">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <div>
+                                        <div class="text-muted small">Aller</div>
+                                        <div class="h5 mb-0">
+                                            {{ selectedFlight?.departure }} → {{ selectedFlight?.destination }}
+                                        </div>
+                                        <div class="text-muted">
+                                            {{ selectedFlight?.departureTime | date:'EEEE d MMMM yyyy' }}
+                                        </div>
+                                    </div>
+                                    <div class="text-end">
+                                        <div class="text-muted small">Vol</div>
+                                        <div class="h5 mb-0">{{ selectedFlight?.airline }} {{ selectedFlight?.flightNumber }}</div>
+                                        <div class="text-muted">
+                                            {{ selectedFlight?.departureTime | date:'HH:mm' }} - 
+                                            {{ selectedFlight?.arrivalTime | date:'HH:mm' }}
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div *ngIf="flightSearch.returnDate" class="mt-4 pt-4 border-top">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <div class="text-muted small">Retour</div>
+                                            <div class="h5 mb-0">
+                                                {{ selectedFlight?.destination }} → {{ selectedFlight?.departure }}
+                                            </div>
+                                            <div class="text-muted">
+                                                {{ flightSearch.returnDate | date:'EEEE d MMMM yyyy' }}
+                                            </div>
+                                        </div>
+                                        <div class="text-end">
+                                            <div class="text-muted small">Vol</div>
+                                            <div class="h5 mb-0">{{ selectedFlight?.airline }} {{ selectedFlight?.returnFlightNumber }}</div>
+                                            <div class="text-muted">
+                                                {{ selectedFlight?.returnDepartureTime | date:'HH:mm' }} - 
+                                                {{ selectedFlight?.returnArrivalTime | date:'HH:mm' }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="passengers-summary mt-4 pt-4 border-top">
+                                    <h6 class="mb-3">Passagers</h6>
+                                    <div class="table-responsive">
+                                        <table class="table table-sm">
+                                            <thead>
+                                                <tr>
+                                                    <th>Passager</th>
+                                                    <th>Type</th>
+                                                    <th>Siège</th>
+                                                    <th>Repas</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr *ngFor="let p of passengers">
+                                                    <td>
+                                                        <div class="fw-bold">{{ p.title }} {{ p.lastName }}</div>
+                                                        <div class="small text-muted">{{ p.firstName }}</div>
+                                                    </td>
+                                                    <td>{{ p.type === 'adult' ? 'Adulte' : 'Enfant' }}</td>
+                                                    <td>
+                                                        <span *ngIf="getSeatForPassenger(p)" class="badge bg-light text-dark">
+                                                            {{ getSeatForPassenger(p) }}
+                                                        </span>
+                                                    </td>
+                                                    <td>
+                                                        <span *ngIf="getMealForPassenger(p)" class="badge bg-light text-dark">
+                                                            {{ getMealForPassenger(p) }}
+                                                        </span>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                                
+                                <div class="price-summary mt-4 pt-4 border-top">
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span class="text-muted">Prix du vol</span>
+                                        <span>{{ calculateTotal() | currency:'XAF':'symbol':'1.0-0' }}</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span class="text-muted">Frais de service</span>
+                                        <span>{{ 5000 | currency:'XAF':'symbol':'1.0-0' }}</span>
+                                    </div>
+                                    <div *ngIf="selectedSeats.length > 0" class="d-flex justify-content-between mb-2">
+                                        <span class="text-muted">Siège(s) réservé(s)</span>
+                                        <span>{{ selectedSeats.length * 3000 | currency:'XAF':'symbol':'1.0-0' }}</span>
+                                    </div>
+                                    <div *ngIf="selectedMeals.length > 0" class="d-flex justify-content-between mb-2">
+                                        <span class="text-muted">Repas à bord</span>
+                                        <span>{{ selectedMeals.length * 2500 | currency:'XAF':'symbol':'1.0-0' }}</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between fw-bold mt-3 pt-2 border-top">
+                                        <span>Total payé</span>
+                                        <span class="text-primary">{{ calculateGrandTotal() | currency:'XAF':'symbol':'1.0-0' }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-5">
+                        <button class="btn btn-primary me-3" (click)="downloadTicket()">
+                            <i class="fas fa-download me-2"></i> Télécharger le billet
+                        </button>
+                        <button class="btn btn-outline-primary" (click)="goToHomepage()">
+                            <i class="fas fa-home me-2"></i> Retour à l'accueil
+                        </button>
+                        
+                        <div class="mt-4">
+                            <p class="text-muted">
+                                Vous pouvez gérer votre réservation à tout moment depuis votre 
+                                <a href="#" class="text-primary">espace client</a>.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </section>

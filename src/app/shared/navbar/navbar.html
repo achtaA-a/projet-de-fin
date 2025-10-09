@@ -1,0 +1,130 @@
+<nav class="navbar navbar-expand-lg navbar-dark fixed-top" [class.scrolled]="isNavbarScrolled" id="mainNavbar">
+  <div class="container">
+    <!-- Logo et nom du site -->
+    <a class="navbar-brand" [routerLink]="['/']" [routerLinkActive]="['active']" [routerLinkActiveOptions]="{exact: true}">
+      <i class="fas fa-plane-departure"></i>
+      <span class="ms-2">TCHAD VOYAGE</span>
+    </a>
+    
+    <!-- Bouton menu mobile -->
+    <button class="navbar-toggler" type="button" 
+            (click)="isMenuCollapsed = !isMenuCollapsed"
+            [attr.aria-expanded]="!isMenuCollapsed" 
+            aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    
+    <!-- Contenu du menu -->
+    <div class="collapse navbar-collapse" [ngbCollapse]="isMenuCollapsed" id="navbarNav">
+      <ul class="navbar-nav ms-auto align-items-lg-center">
+        <!-- Liens de navigation -->
+        <li class="nav-item">
+          <a class="nav-link" [routerLink]="['/']" 
+             [routerLinkActive]="['active']" 
+             [routerLinkActiveOptions]="{exact: true}"
+             (click)="isMenuCollapsed = true">
+            <i class="fas fa-home d-lg-none me-2"></i>
+            Accueil
+          </a>
+        </li>
+        
+        <li class="nav-item">
+          <a class="nav-link" [routerLink]="['/reservation']" 
+             [routerLinkActive]="['active']"
+             (click)="isMenuCollapsed = true">
+            <i class="fas fa-ticket-alt d-lg-none me-2"></i>
+            Réserver un vol
+          </a>
+        </li>
+        
+        <li class="nav-item">
+          <a class="nav-link" href="#services" 
+             (click)="scrollTo('services'); isMenuCollapsed = true; $event.preventDefault()">
+            <i class="fas fa-concierge-bell d-lg-none me-2"></i>
+            Services
+          </a>
+        </li>
+        
+        <li class="nav-item">
+          <a class="nav-link" href="#" 
+             (click)="openContactModal(); isMenuCollapsed = true; $event.preventDefault()">
+            <i class="fas fa-envelope d-lg-none me-2"></i>
+            Contact
+          </a>
+        </li>
+        
+        <!-- Séparateur pour mobile -->
+        <li class="d-lg-none"><hr class="dropdown-divider my-2"></li>
+        
+        <!-- Sélecteur de langue -->
+        <li class="nav-item d-flex align-items-center">
+          <div class="language-selector" (click)="toggleLanguage()">
+            <i class="fas fa-globe me-1"></i>
+            <span class="fw-bold">{{ currentLanguage }}</span>
+            <span class="mx-1">/</span>
+            <span>{{ currentLanguage === 'FR' ? 'AR' : 'FR' }}</span>
+          </div>
+        </li>
+        
+        <!-- Bouton de changement de thème -->
+        <li class="nav-item ms-lg-2 mt-2 mt-lg-0">
+          <button class="btn btn-outline-light btn-sm" 
+                  (click)="toggleTheme()"
+                  [title]="isDarkTheme ? 'Passer en mode clair' : 'Passer en mode sombre'">
+            <i class="fas" [class.fa-moon]="!isDarkTheme" [class.fa-sun]="isDarkTheme"></i>
+            <span class="d-lg-none ms-2">{{ isDarkTheme ? 'Mode clair' : 'Mode sombre' }}</span>
+          </button>
+        </li>
+        
+        <!-- Bouton de connexion -->
+        <li class="nav-item ms-lg-2 mt-2 mt-lg-0">
+          <button class="btn btn-warning btn-sm" 
+                  (click)="openLoginModal()"
+                  (keyup.enter)="openLoginModal()">
+            <i class="fas fa-sign-in-alt me-1"></i>
+            <span>Connexion</span>
+          </button>
+        </li>
+      </ul>
+    </div>
+  </div>
+  
+  <!-- Contact Modal -->
+  <div *ngIf="showContactModal" class="modal-overlay" (click)="closeContactModal()">
+    <div class="modal-container" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Contactez-nous</h2>
+        <button type="button" class="close-btn" (click)="closeContactModal()" aria-label="Fermer">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form (ngSubmit)="onSubmitContactForm()" #contactForm="ngForm">
+          <div class="form-group">
+            <label for="name">Nom complet</label>
+            <input type="text" id="name" name="name" class="form-control" [(ngModel)]="contactFormData.name" required>
+          </div>
+          <div class="form-group">
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" class="form-control" [(ngModel)]="contactFormData.email" required>
+          </div>
+          <div class="form-group">
+            <label for="subject">Sujet</label>
+            <input type="text" id="subject" name="subject" class="form-control" [(ngModel)]="contactFormData.subject" required>
+          </div>
+          <div class="form-group">
+            <label for="message">Message</label>
+            <textarea id="message" name="message" rows="4" class="form-control" [(ngModel)]="contactFormData.message" required></textarea>
+          </div>
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary" [disabled]="!contactForm.form.valid || isSubmitting">
+              <span *ngIf="!isSubmitting">Envoyer</span>
+              <span *ngIf="isSubmitting" class="spinner">Envoi en cours...</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- Espace pour compenser la hauteur de la navbar fixe -->
+<div class="navbar-spacer"></div>

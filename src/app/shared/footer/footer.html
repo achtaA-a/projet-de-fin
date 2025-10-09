@@ -1,0 +1,128 @@
+<footer class="footer">
+  <div class="container">
+    <div class="row g-4">
+      <!-- À propos de nous -->
+      <div class="col-lg-4 col-md-6">
+        <div class="footer-about">
+          <h5>Tchad Voyage</h5>
+          <p>Votre partenaire de confiance pour des voyages inoubliables à travers le Tchad et au-delà. Nous nous engageons à vous offrir des expériences de voyage exceptionnelles.</p>
+          
+          <div class="social-links">
+            <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
+              <i class="fab fa-facebook-f"></i>
+            </a>
+            <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" aria-label="Twitter">
+              <i class="fab fa-twitter"></i>
+            </a>
+            <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+              <i class="fab fa-instagram"></i>
+            </a>
+            <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
+              <i class="fab fa-linkedin-in"></i>
+            </a>
+            <a href="https://youtube.com" target="_blank" rel="noopener noreferrer" aria-label="YouTube">
+              <i class="fab fa-youtube"></i>
+            </a>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Liens rapides -->
+      <div class="col-lg-2 col-md-6">
+        <h5>Liens rapides</h5>
+        <ul class="footer-links">
+          <li><a [routerLink]="['/']" (click)="scrollToTop()">Accueil</a></li>
+          <li><a [routerLink]="['/reservation']">Réserver un vol</a></li>
+          <li><a href="#" (click)="scrollTo('services'); $event.preventDefault()">Nos services</a></li>
+          <li><a href="#" (click)="scrollTo('destinations'); $event.preventDefault()">Destinations</a></li>
+          <li><a href="#" (click)="scrollTo('contact'); $event.preventDefault()">Contact</a></li>
+          <li><a [routerLink]="['/a-propos']">À propos</a></li>
+        </ul>
+      </div>
+      
+      <!-- Contact -->
+      <div class="col-lg-3 col-md-6">
+        <h5>Contactez-nous</h5>
+        <ul class="footer-contact">
+          <li>
+            <i class="fas fa-map-marker-alt"></i>
+            <span>123 Avenue du Président, N'Djamena, Tchad</span>
+          </li>
+          <li>
+            <i class="fas fa-phone"></i>
+            <a href="tel:+235XXXXXXXX">+235 XX XX XX XX</a>
+          </li>
+          <li>
+            <i class="fas fa-envelope"></i>
+            <a href="mailto:contact@tchadvoyage.td">contact@tchadvoyage.td</a>
+          </li>
+          <li>
+            <i class="fas fa-clock"></i>
+            <span>Lun - Sam: 8h00 - 18h00</span>
+          </li>
+        </ul>
+      </div>
+      
+      <!-- Newsletter -->
+      <div class="col-lg-3 col-md-6">
+        <h5>Newsletter</h5>
+        <p>Abonnez-vous à notre newsletter pour recevoir les dernières offres et actualités.</p>
+        
+        <form (ngSubmit)="subscribeNewsletter()" class="newsletter-form">
+          <div class="input-group mb-3">
+            <input type="email" 
+                   [(ngModel)]="newsletterEmail" 
+                   [ngModelOptions]="{standalone: true}"
+                   class="form-control" 
+                   placeholder="Votre adresse email" 
+                   aria-label="Votre adresse email"
+                   required>
+            <button class="btn btn-primary" type="submit" [disabled]="!newsletterEmail">
+              <i class="fas fa-paper-plane"></i>
+            </button>
+          </div>
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" id="newsletterConsent" required>
+            <label class="form-check-label small" for="newsletterConsent">
+              J'accepte de recevoir des offres par email
+            </label>
+          </div>
+        </form>
+        
+        <div class="mt-4">
+          <h6>Moyens de paiement</h6>
+          <div class="payment-methods">
+            <i class="fab fa-cc-visa"></i>
+            <i class="fab fa-cc-mastercard"></i>
+            <i class="fab fa-cc-paypal"></i>
+            <i class="fas fa-mobile-alt"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <hr>
+    
+    <div class="footer-bottom">
+      <div class="row align-items-center">
+        <div class="col-lg-6 text-center text-lg-start mb-3 mb-lg-0">
+          <p class="mb-0">&copy; {{ currentYear }} Tchad Voyage. Tous droits réservés.</p>
+        </div>
+        <div class="col-lg-6 text-center text-lg-end">
+          <div class="footer-legal-links">
+            <a [routerLink]="['/conditions-generales']">Conditions générales</a>
+            <a [routerLink]="['/confidentialite']">Politique de confidentialité</a>
+            <a [routerLink]="['/cookies']">Politique des cookies</a>
+            <a [routerLink]="['/mentions-legales']">Mentions légales</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Bouton de retour en haut -->
+  <button class="btn btn-primary btn-scroll-top" (click)="scrollToTop()" [class.show]="showScrollButton" 
+          aria-label="Retour en haut de la page">
+    <i class="fas fa-arrow-up"></i>
+  </button>
+</footer>
