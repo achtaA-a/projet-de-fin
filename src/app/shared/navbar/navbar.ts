@@ -24,8 +24,10 @@ export class NavbarComponent implements OnInit, OnDestroy {
   isMenuCollapsed = true;
   isNavbarScrolled = false;
   currentLanguage = 'FR';
+  currentLanguageName = 'Français';
   isDarkTheme = false;
   showLoginModal = false;
+  showForgotPasswordModal = false;
   currentRoute = '';
   showContactModal = false;
   isSubmitting = false;
@@ -34,6 +36,13 @@ export class NavbarComponent implements OnInit, OnDestroy {
     email: '',
     subject: '',
     message: ''
+  };
+  loginFormData = {
+    email: '',
+    password: ''
+  };
+  forgotPasswordFormData = {
+    email: ''
   };
   private routerSubscription: Subscription | undefined;
 
@@ -46,6 +55,9 @@ export class NavbarComponent implements OnInit, OnDestroy {
     console.log('NavbarComponent initialisé');
     // Vérifier le thème au chargement
     this.checkTheme();
+    
+    // Vérifier la langue au chargement
+    this.checkLanguagePreference();
     
     // Suivre les changements de route
     this.routerSubscription = this.router.events.subscribe(event => {
@@ -125,9 +137,44 @@ export class NavbarComponent implements OnInit, OnDestroy {
 
   toggleLanguage() {
     this.currentLanguage = this.currentLanguage === 'FR' ? 'AR' : 'FR';
-    // Ici, vous pouvez ajouter la logique pour changer la langue de l'application
-    // Par exemple, utiliser un service de traduction
+    this.updateLanguageName();
+    this.saveLanguagePreference();
     console.log('Langue changée vers:', this.currentLanguage);
+  }
+
+  changeLanguage(lang: string): void {
+    this.currentLanguage = lang;
+    this.updateLanguageName();
+    this.saveLanguagePreference();
+    console.log('Langue changée vers:', lang);
+  }
+
+  private updateLanguageName(): void {
+    switch(this.currentLanguage) {
+      case 'FR':
+        this.currentLanguageName = 'Français';
+        break;
+      case 'AR':
+        this.currentLanguageName = 'العربية';
+        break;
+      case 'EN':
+        this.currentLanguageName = 'English';
+        break;
+      default:
+        this.currentLanguageName = 'Français';
+    }
+  }
+
+  private saveLanguagePreference(): void {
+    localStorage.setItem('language', this.currentLanguage);
+  }
+
+  private checkLanguagePreference(): void {
+    const savedLanguage = localStorage.getItem('language');
+    if (savedLanguage) {
+      this.currentLanguage = savedLanguage;
+      this.updateLanguageName();
+    }
   }
 
   toggleTheme() {
@@ -169,15 +216,68 @@ export class NavbarComponent implements OnInit, OnDestroy {
 
   openLoginModal() {
     this.showLoginModal = true;
+    this.showForgotPasswordModal = false;
     document.body.classList.add('modal-open');
-    // Empêcher le défilement du corps lorsque la modale est ouverte
     document.body.style.overflow = 'hidden';
   }
 
   closeLoginModal() {
     this.showLoginModal = false;
     document.body.classList.remove('modal-open');
-    // Rétablir le défilement du corps
     document.body.style.overflow = '';
+  }
+
+  openForgotPasswordModal() {
+    this.showLoginModal = false;
+    this.showForgotPasswordModal = true;
+  }
+
+  closeForgotPasswordModal() {
+    this.showForgotPasswordModal = false;
+  }
+
+  onSubmitLoginForm() {
+    if (!this.isSubmitting) {
+      this.isSubmitting = true;
+      
+      console.log('Tentative de connexion:', this.loginFormData);
+      
+      // Simulation d'une connexion
+      setTimeout(() => {
+        this.isSubmitting = false;
+        this.closeLoginModal();
+        
+        // Réinitialiser le formulaire
+        this.loginFormData = {
+          email: '',
+          password: ''
+        };
+        
+        // Afficher un message de succès
+        alert('Connexion réussie !');
+      }, 1500);
+    }
+  }
+
+  onSubmitForgotPasswordForm() {
+    if (!this.isSubmitting) {
+      this.isSubmitting = true;
+      
+      console.log('Récupération de mot de passe:', this.forgotPasswordFormData);
+      
+      // Simulation d'envoi de lien de récupération
+      setTimeout(() => {
+        this.isSubmitting = false;
+        this.closeForgotPasswordModal();
+        
+        // Réinitialiser le formulaire
+        this.forgotPasswordFormData = {
+          email: ''
+        };
+        
+        // Afficher un message de succès
+        alert('Lien de récupération envoyé à votre adresse email !');
+      }, 1500);
+    }
   }
 }

@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable, of } from 'rxjs';
+import { BehaviorSubject, Observable, of, throwError } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
 
 export interface Flight {
   id: string;
@@ -62,6 +63,28 @@ export interface Booking {
   totalPrice: number;
   bookingDate: Date;
   status: 'confirmed' | 'pending' | 'cancelled';
+}
+
+export interface FlightSearchCriteria {
+  departure?: string;
+  destination?: string;
+  date?: string;
+  passengers?: number;
+  travelClass?: 'economy' | 'business' | 'first';
+  returnDate?: string;
+  isRoundTrip?: boolean;
+}
+
+export interface FlightSearchResult {
+  flights: Flight[];
+  totalResults: number;
+  searchCriteria: FlightSearchCriteria;
+}
+
+export interface ServiceError {
+  code: string;
+  message: string;
+  details?: any;
 }
 
 @Injectable({
@@ -228,77 +251,144 @@ export class FlightService {
   }
 
   // Search flights based on criteria
-  searchFlights(criteria: {
-    departure?: string;
-    destination?: string;
-    date?: string;
-    passengers?: number;
-    travelClass?: 'economy' | 'business' | 'first';
-  }): Observable<Flight[]> {
-    return of(this.flights.filter(flight => {
-      // Extraire le code de l'aéroport de la destination (ex: "Paris (CDG)" -> "CDG")
-      const extractAirportCode = (str: string) => {
-        const match = str.match(/\(([^)]+)\)/);
-        return match ? match[1] : str;
+  searchFlights(criteria: FlightSearchCriteria): Observable<FlightSearchResult> {
+    try {
+      // Validation des critères de recherche
+      if (!criteria.departure && !criteria.destination) {
+        return throwError(() => ({
+          code: 'INVALID_CRITERIA',
+          message: 'Au moins un aéroport de départ ou de destination doit être spécifié'
+        } as ServiceError));
+      }
+
+      const filteredFlights = this.flights.filter(flight => {
+        return this.matchesFlightCriteria(flight, criteria);
+      });
+
+      const result: FlightSearchResult = {
+        flights: filteredFlights,
+        totalResults: filteredFlights.length,
+        searchCriteria: criteria
       };
 
-      const departureCode = criteria.departure ? extractAirportCode(criteria.departure) : null;
-      const destinationCode = criteria.destination ? extractAirportCode(criteria.destination) : null;
+      return of(result).pipe(
+        catchError(error => {
+          console.error('Erreur lors de la recherche de vols:', error);
+          return throwError(() => ({
+            code: 'SEARCH_ERROR',
+            message: 'Erreur lors de la recherche de vols',
+            details: error
+          } as ServiceError));
+        })
+      );
+    } catch (error) {
+      return throwError(() => ({
+        code: 'SEARCH_ERROR',
+        message: 'Erreur lors de la recherche de vols',
+        details: error
+      } as ServiceError));
+    }
+  }
 
-      const matchesDeparture = !departureCode || 
-        flight.departure.toLowerCase().includes(departureCode.toLowerCase()) ||
-        flight.departureCode.toLowerCase() === departureCode.toLowerCase();
-      
-      const matchesDestination = !destinationCode ||
-        flight.destination.toLowerCase().includes(destinationCode.toLowerCase()) ||
-        flight.destinationCode.toLowerCase() === destinationCode.toLowerCase();
-      
-      const matchesDate = !criteria.date || flight.departureDate === criteria.date;
-      const matchesClass = !criteria.travelClass || flight.travelClass === criteria.travelClass;
-      const hasSeats = !criteria.passengers || flight.availableSeats >= criteria.passengers;
+  // Helper method to check if flight matches criteria
+  private matchesFlightCriteria(flight: Flight, criteria: FlightSearchCriteria): boolean {
+    // Extraire le code de l'aéroport de la destination (ex: "Paris (CDG)" -> "CDG")
+    const extractAirportCode = (str: string) => {
+      const match = str.match(/\(([^)]+)\)/);
+      return match ? match[1] : str;
+    };
 
-      return matchesDeparture && matchesDestination && matchesDate && 
-             matchesClass && hasSeats;
-    }));
+    const departureCode = criteria.departure ? extractAirportCode(criteria.departure) : null;
+    const destinationCode = criteria.destination ? extractAirportCode(criteria.destination) : null;
+
+    const matchesDeparture = !departureCode || 
+      flight.departure.toLowerCase().includes(departureCode.toLowerCase()) ||
+      flight.departureCode.toLowerCase() === departureCode.toLowerCase();
+    
+    const matchesDestination = !destinationCode ||
+      flight.destination.toLowerCase().includes(destinationCode.toLowerCase()) ||
+      flight.destinationCode.toLowerCase() === destinationCode.toLowerCase();
+    
+    const matchesDate = !criteria.date || flight.departureDate === criteria.date;
+    const matchesClass = !criteria.travelClass || flight.travelClass === criteria.travelClass;
+    const hasSeats = !criteria.passengers || flight.availableSeats >= criteria.passengers;
+
+    return matchesDeparture && matchesDestination && matchesDate && 
+           matchesClass && hasSeats;
   }
 
   // Book a flight
   bookFlight(flightId: string | Flight, passengerCount: number, travelClass: 'economy' | 'business' | 'first'): Observable<Booking> {
-    // Si on reçoit un objet Flight, on l'utilise directement, sinon on cherche le vol par ID
-    const flightToBook = typeof flightId === 'string' 
-      ? this.flights.find(f => f.id === flightId)
-      : flightId;
+    try {
+      // Validation des paramètres
+      if (passengerCount <= 0 || passengerCount > 10) {
+        return throwError(() => ({
+          code: 'INVALID_PASSENGER_COUNT',
+          message: 'Le nombre de passagers doit être entre 1 et 10'
+        } as ServiceError));
+      }
+
+      // Si on reçoit un objet Flight, on l'utilise directement, sinon on cherche le vol par ID
+      const flightToBook = typeof flightId === 'string' 
+        ? this.flights.find(f => f.id === flightId)
+        : flightId;
+        
+      if (!flightToBook) {
+        return throwError(() => ({
+          code: 'FLIGHT_NOT_FOUND',
+          message: 'Vol non trouvé'
+        } as ServiceError));
+      }
+
+      if (flightToBook.availableSeats < passengerCount) {
+        return throwError(() => ({
+          code: 'INSUFFICIENT_SEATS',
+          message: `Seulement ${flightToBook.availableSeats} siège(s) disponible(s)`
+        } as ServiceError));
+      }
+
+      const booking: Booking = {
+        id: `BKG-${Math.random().toString(36).substr(2, 8).toUpperCase()}`,
+        flight: { ...flightToBook },
+        passengers: passengerCount,
+        travelClass,
+        totalPrice: flightToBook.price * passengerCount,
+        bookingDate: new Date(),
+        status: 'confirmed'
+      };
+
+      // Update available seats
+      flightToBook.availableSeats -= passengerCount;
       
-    if (!flightToBook) {
-      throw new Error('Vol non trouvé');
+      // Add to bookings
+      this.bookings.push(booking);
+      this.bookingSubject.next([...this.bookings]);
+      
+      // Save to localStorage
+      try {
+        localStorage.setItem('bookings', JSON.stringify(this.bookings));
+      } catch (storageError) {
+        console.warn('Impossible de sauvegarder dans localStorage:', storageError);
+      }
+      
+      return of(booking).pipe(
+        catchError(error => {
+          console.error('Erreur lors de la réservation:', error);
+          return throwError(() => ({
+            code: 'BOOKING_ERROR',
+            message: 'Erreur lors de la réservation',
+            details: error
+          } as ServiceError));
+        })
+      );
+    } catch (error) {
+      return throwError(() => ({
+        code: 'BOOKING_ERROR',
+        message: 'Erreur lors de la réservation',
+        details: error
+      } as ServiceError));
     }
-
-    if (flightToBook.availableSeats < passengerCount) {
-      throw new Error('Not enough seats available');
-    }
-
-    const booking: Booking = {
-      id: `BKG-${Math.random().toString(36).substr(2, 8).toUpperCase()}`,
-      flight: { ...flightToBook },
-      passengers: passengerCount,
-      travelClass,
-      totalPrice: flightToBook.price * passengerCount,
-      bookingDate: new Date(),
-      status: 'confirmed'
-    };
-
-    // Update available seats
-    flightToBook.availableSeats -= passengerCount;
-    
-    // Add to bookings
-    this.bookings.push(booking);
-    this.bookingSubject.next([...this.bookings]);
-    
-    // Save to localStorage
-    localStorage.setItem('bookings', JSON.stringify(this.bookings));
-    
-    return of(booking);
-}
+  }
 
   // Get all bookings
   getBookings(): Observable<Booking[]> {

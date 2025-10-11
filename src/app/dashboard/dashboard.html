@@ -1,46 +1,3 @@
-<!-- Navigation -->
-<nav class="navbar navbar-expand-lg navbar-dark fixed-top" [class.scrolled]="isNavbarScrolled" id="top">
-    <div class="container">
-        <a class="navbar-brand" href="#" (click)="goHome(); $event.preventDefault()">
-            <i class="fas fa-plane-departure fa-2x"></i>
-            <span>TCHAD VOYAGES</span>
-        </a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav ms-auto">
-                <li class="nav-item">
-                    <a class="nav-link active" href="#" (click)="goHome(); $event.preventDefault()">Accueil</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#" (click)="showDestinations(); $event.preventDefault()">Destinations</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#" (click)="showPromotions(); $event.preventDefault()">Promotions</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#" (click)="showContact(); $event.preventDefault()">Contact</a>
-                </li>
-                <li class="nav-item">
-                    <div class="nav-link language-selector" (click)="toggleLanguage()">
-                        <span>{{ currentLanguage }}</span> | <span>{{ currentLanguage === 'FR' ? 'AR' : 'FR' }}</span>
-                    </div>
-                </li>
-                <li class="nav-item">
-                    <button class="btn btn-outline-light btn-sm ms-2" (click)="toggleTheme()">
-                        <i class="fas" [class.fa-moon]="!isDarkTheme" [class.fa-sun]="isDarkTheme"></i>
-                    </button>
-                </li>
-                <li class="nav-item ms-2">
-                    <button class="btn btn-warning btn-sm" (click)="openLoginModal()">
-                        <i class="fas fa-sign-in-alt me-1"></i> Connexion
-                    </button>
-                </li>
-            </ul>
-        </div>
-    </div>
-</nav>
 
 <!-- Hero Section -->
 <section class="hero-section" id="home">
@@ -216,6 +173,7 @@
         </div>
     </div>
 </section>
+
 
 <!-- Modals -->
 @if (showLoginModal) {

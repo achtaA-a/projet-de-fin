@@ -38,10 +38,18 @@
         </li>
         
         <li class="nav-item">
-          <a class="nav-link" href="#services" 
-             (click)="scrollTo('services'); isMenuCollapsed = true; $event.preventDefault()">
-            <i class="fas fa-concierge-bell d-lg-none me-2"></i>
-            Services
+          <a class="nav-link" href="#destinations" 
+             (click)="scrollTo('destinations'); isMenuCollapsed = true; $event.preventDefault()">
+            <i class="fas fa-map-marked-alt d-lg-none me-2"></i>
+            Destinations
+          </a>
+        </li>
+        
+        <li class="nav-item">
+          <a class="nav-link" href="#promotions" 
+             (click)="scrollTo('promotions'); isMenuCollapsed = true; $event.preventDefault()">
+            <i class="fas fa-percentage d-lg-none me-2"></i>
+            Promotions
           </a>
         </li>
         
@@ -57,13 +65,31 @@
         <li class="d-lg-none"><hr class="dropdown-divider my-2"></li>
         
         <!-- Sélecteur de langue -->
-        <li class="nav-item d-flex align-items-center">
-          <div class="language-selector" (click)="toggleLanguage()">
-            <i class="fas fa-globe me-1"></i>
-            <span class="fw-bold">{{ currentLanguage }}</span>
-            <span class="mx-1">/</span>
-            <span>{{ currentLanguage === 'FR' ? 'AR' : 'FR' }}</span>
-          </div>
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle language-selector" href="#" id="languageDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="fas fa-globe me-2"></i>
+            <span class="active-lang">{{ currentLanguageName }}</span>
+          </a>
+          <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="languageDropdown">
+            <li>
+              <a class="dropdown-item" href="#" (click)="changeLanguage('FR'); $event.preventDefault()" [class.active]="currentLanguage === 'FR'">
+                <span class="flag-icon">🇫🇷</span> Français
+                <i class="fas fa-check ms-auto" *ngIf="currentLanguage === 'FR'"></i>
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item" href="#" (click)="changeLanguage('AR'); $event.preventDefault()" [class.active]="currentLanguage === 'AR'">
+                <span class="flag-icon">🇸🇦</span> العربية
+                <i class="fas fa-check ms-auto" *ngIf="currentLanguage === 'AR'"></i>
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item" href="#" (click)="changeLanguage('EN'); $event.preventDefault()" [class.active]="currentLanguage === 'EN'">
+                <span class="flag-icon">🇬🇧</span> English
+                <i class="fas fa-check ms-auto" *ngIf="currentLanguage === 'EN'"></i>
+              </a>
+            </li>
+          </ul>
         </li>
         
         <!-- Bouton de changement de thème -->
@@ -118,6 +144,64 @@
             <button type="submit" class="btn btn-primary" [disabled]="!contactForm.form.valid || isSubmitting">
               <span *ngIf="!isSubmitting">Envoyer</span>
               <span *ngIf="isSubmitting" class="spinner">Envoi en cours...</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Login Modal -->
+  <div *ngIf="showLoginModal" class="modal-overlay" (click)="closeLoginModal()">
+    <div class="modal-container" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Connexion</h2>
+        <button type="button" class="close-btn" (click)="closeLoginModal()" aria-label="Fermer">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form (ngSubmit)="onSubmitLoginForm()" #loginForm="ngForm">
+          <div class="form-group">
+            <label for="loginEmail">Email</label>
+            <input type="email" id="loginEmail" name="email" class="form-control" [(ngModel)]="loginFormData.email" required>
+          </div>
+          <div class="form-group">
+            <label for="loginPassword">Mot de passe</label>
+            <input type="password" id="loginPassword" name="password" class="form-control" [(ngModel)]="loginFormData.password" required>
+          </div>
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary" [disabled]="!loginForm.form.valid || isSubmitting">
+              <span *ngIf="!isSubmitting">Se connecter</span>
+              <span *ngIf="isSubmitting" class="spinner">Connexion en cours...</span>
+            </button>
+            <button type="button" class="btn btn-link" (click)="openForgotPasswordModal()">
+              Mot de passe oublié ?
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Forgot Password Modal -->
+  <div *ngIf="showForgotPasswordModal" class="modal-overlay" (click)="closeForgotPasswordModal()">
+    <div class="modal-container" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Mot de passe oublié</h2>
+        <button type="button" class="close-btn" (click)="closeForgotPasswordModal()" aria-label="Fermer">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form (ngSubmit)="onSubmitForgotPasswordForm()" #forgotPasswordForm="ngForm">
+          <div class="form-group">
+            <label for="forgotEmail">Email</label>
+            <input type="email" id="forgotEmail" name="email" class="form-control" [(ngModel)]="forgotPasswordFormData.email" required>
+          </div>
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary" [disabled]="!forgotPasswordForm.form.valid || isSubmitting">
+              <span *ngIf="!isSubmitting">Envoyer le lien</span>
+              <span *ngIf="isSubmitting" class="spinner">Envoi en cours...</span>
+            </button>
+            <button type="button" class="btn btn-link" (click)="closeForgotPasswordModal(); openLoginModal()">
+              Retour à la connexion
             </button>
           </div>
         </form>

@@ -3,13 +3,14 @@ import { CommonModule } from '@angular/common';
 import { RouterOutlet } from '@angular/router';
 import { NavbarComponent } from '../../shared/navbar/navbar';
 import { FooterComponent } from '../../shared/footer/footer';
+import { ErrorDisplayComponent } from '../../shared/error-display/error-display.component';
 import { Subscription } from 'rxjs';
 import { ThemeService } from '../../services/theme.service';
 
 @Component({
   selector: 'app-main-layout',
   standalone: true,
-  imports: [CommonModule, RouterOutlet, NavbarComponent, FooterComponent],
+  imports: [CommonModule, RouterOutlet, NavbarComponent, FooterComponent, ErrorDisplayComponent],
   template: `
     <div class="page-wrapper">
       <app-navbar></app-navbar>
@@ -17,6 +18,7 @@ import { ThemeService } from '../../services/theme.service';
         <router-outlet></router-outlet>
       </main>
       <app-footer></app-footer>
+      <app-error-display></app-error-display>
     </div>
   `,
   styles: [`

@@ -48,9 +48,32 @@
 .language-selector {
     cursor: pointer;
     font-weight: 500;
+    display: flex !important;
+    align-items: center;
+    gap: 0.3rem;
+    transition: all 0.3s ease;
 }
 
-.language-selector span:hover {
+.language-selector:hover {
+    background-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.language-selector .active-lang {
+    font-weight: 600;
+    color: #ffc107;
+}
+
+.language-selector .lang-divider {
+    color: rgba(255, 255, 255, 0.5);
+    margin: 0 0.2rem;
+}
+
+.language-selector .inactive-lang {
+    color: rgba(255, 255, 255, 0.7);
+    transition: color 0.3s ease;
+}
+
+.language-selector:hover .inactive-lang {
     color: #ffc107;
 }
 
@@ -345,6 +368,31 @@
     margin-right: 0.5rem;
     color: #6c757d;
 }
+/* Bloquer le scroll quand modale ouverte */
+body.modal-open {
+    overflow: hidden;
+  }
+  
+  /* Style pour la section contact */
+  .contact-section {
+    background-color: #f8f9fa;
+  }
+  
+  .section-title {
+    font-weight: 700;
+    margin-bottom: 1rem;
+  }
+  
+  .section-subtitle {
+    color: #6c757d;
+    margin-bottom: 2rem;
+  }
+  
+  /* Navbar fixe */
+  .navbar.scrolled {
+    background-color: rgba(0, 0, 0, 0.9) !important;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  }
 
 /* Footer */
 .modern-footer {
@@ -452,6 +500,117 @@
 .footer-bottom a:hover {
     text-decoration: underline;
 }
+/* Contact Section */
+.contact-section {
+    background: #f8f9fa;
+    padding: 5rem 0;
+}
+
+.contact-info-card {
+    background: white;
+    padding: 2rem;
+    border-radius: 1rem;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+}
+
+.contact-info-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.contact-info-item:last-child {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
+}
+
+.contact-icon {
+    width: 50px;
+    height: 50px;
+    background: rgba(13, 110, 253, 0.1);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.contact-icon i {
+    font-size: 1.3rem;
+    color: var(--primary-color);
+}
+
+.contact-details h5 {
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: var(--dark-color);
+}
+
+.contact-details p {
+    margin: 0;
+    color: #6c757d;
+    line-height: 1.6;
+}
+
+
+/* Language Dropdown Styles */
+.language-selector {
+    position: relative;
+}
+
+.language-selector.dropdown-toggle::after {
+    margin-left: 0.5rem;
+    vertical-align: middle;
+}
+
+.language-selector .active-lang {
+    font-weight: 500;
+}
+
+.dropdown-menu {
+    background: rgba(0, 0, 0, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 0.5rem;
+    padding: 0.5rem;
+    margin-top: 0.5rem;
+    min-width: 200px;
+}
+
+.dropdown-item {
+    color: white;
+    padding: 0.75rem 1rem;
+    border-radius: 0.375rem;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.dropdown-item:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #ffc107;
+}
+
+.dropdown-item.active {
+    background: rgba(255, 193, 7, 0.2);
+    color: #ffc107;
+    font-weight: 600;
+}
+
+.dropdown-item .flag-icon {
+    font-size: 1.2rem;
+    margin-right: 0.5rem;
+}
+
+.dropdown-item .fa-check {
+    color: #ffc107;
+    font-size: 0.9rem;
+}
+
 /* Responsive Adjustments */
 @media (max-width: 768px) {
     .hero-title {
@@ -465,6 +624,9 @@
     }
     .feature-card {
         margin-bottom: 2rem;
+    }
+    .contact-form-card {
+        margin-top: 2rem;
     }
 }
 

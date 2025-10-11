@@ -2,7 +2,8 @@ import { Component, OnInit, PipeTransform } from '@angular/core';
 import { CommonModule, DatePipe, CurrencyPipe } from '@angular/common';
 import { FormsModule, NgForm, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { FlightService, Flight } from '../services/flight.service';
+import { FlightService, Flight, FlightSearchResult } from '../services/flight.service';
+import { ErrorService } from '../services/error.service';
 import { NgbTooltipModule } from '@ng-bootstrap/ng-bootstrap';
 import { DurationPipe } from '../shared/pipes/duration.pipe';
 
@@ -107,6 +108,7 @@ export class ReservationComponent implements OnInit {
 
   constructor(
     private flightService: FlightService,
+    private errorService: ErrorService,
     private router: Router
   ) {}
 
@@ -175,11 +177,11 @@ export class ReservationComponent implements OnInit {
     
     // Appel au service de recherche de vols
     this.flightService.searchFlights(this.flightSearch).subscribe({
-      next: (flights) => {
-        this.availableFlights = flights;
+      next: (searchResult) => {
+        this.availableFlights = searchResult.flights;
         this.isLoading = false;
         
-        if (flights.length > 0) {
+        if (searchResult.flights.length > 0) {
           this.nextStep();
         } else {
           this.errorMessage = 'Aucun vol disponible pour les critères sélectionnés.';
@@ -188,7 +190,8 @@ export class ReservationComponent implements OnInit {
       error: (error) => {
         console.error('Erreur lors de la recherche de vols:', error);
         this.isLoading = false;
-        this.errorMessage = 'Une erreur est survenue lors de la recherche. Veuillez réessayer plus tard.';
+        this.errorService.handleServiceError(error, 'Recherche de vols');
+        this.errorMessage = error?.message || 'Une erreur est survenue lors de la recherche. Veuillez réessayer plus tard.';
       }
     });
   }

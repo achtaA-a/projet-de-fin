@@ -2,6 +2,7 @@ import { Component, OnInit, HostListener } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 interface Destination {
   id: number;
@@ -18,7 +19,7 @@ interface Destination {
   selector: 'app-dashboard',
   templateUrl: './dashboard.html',
   styleUrls: ['./dashboard.css'],
-  imports: [CommonModule, FormsModule]
+  imports: [CommonModule, FormsModule, TranslateModule]
 })
 export class DashboardComponent implements OnInit {
   // Données des destinations
@@ -56,7 +57,7 @@ export class DashboardComponent implements OnInit {
     {
       id: 4,
       name: "Le Caire, Égypte",
-      image: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=300&fit=crop",
+      image: "https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=400&h=300&fit=crop",
       price: "320,000 FCFA",
       flightTime: "4h20",
       flightsPerWeek: "3 vols/semaine",
@@ -66,8 +67,8 @@ export class DashboardComponent implements OnInit {
   ];
 
   // États de l'application
-  isNavbarScrolled = false;
   currentLanguage = 'FR';
+  currentLanguageName = 'Français';
   isDarkTheme = false;
   showLoginModal = false;
   showForgotPasswordModal = false;
@@ -76,23 +77,21 @@ export class DashboardComponent implements OnInit {
   loginData = { email: '', password: '' };
   forgotPasswordData = { email: '' };
 
-  constructor(private router: Router) {}
+  constructor(
+    private router: Router,
+    private translate: TranslateService
+  ) {
+    // Configurer les langues disponibles
+    this.translate.addLangs(['fr', 'en', 'ar']);
+    this.translate.setDefaultLang('fr');
+  }
 
   ngOnInit(): void {
     this.checkThemePreference();
-  }
-
-  // Écouter le défilement pour la navbar
-  @HostListener('window:scroll', [])
-  onWindowScroll() {
-    this.isNavbarScrolled = window.scrollY > 50;
+    this.checkLanguagePreference();
   }
 
   // Navigation
-  goHome(): void {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }
-
   showDestinations(): void {
     const destinationsSection = document.getElementById('destinations');
     if (destinationsSection) {
@@ -101,7 +100,6 @@ export class DashboardComponent implements OnInit {
   }
 
   showPromotions(): void {
-    // Implémentation pour les promotions
     alert('Section promotions à venir!');
   }
 
@@ -119,6 +117,55 @@ export class DashboardComponent implements OnInit {
   // Changer la langue
   toggleLanguage(): void {
     this.currentLanguage = this.currentLanguage === 'FR' ? 'AR' : 'FR';
+    this.saveLanguagePreference();
+  }
+
+  changeLanguage(lang: string): void {
+    this.currentLanguage = lang;
+    
+    // Mettre à jour le nom de la langue
+    switch(lang) {
+      case 'FR':
+        this.currentLanguageName = 'Français';
+        this.translate.use('fr');
+        break;
+      case 'AR':
+        this.currentLanguageName = 'العربية';
+        this.translate.use('ar');
+        // Appliquer la direction RTL pour l'arabe
+        document.documentElement.setAttribute('dir', 'rtl');
+        document.documentElement.setAttribute('lang', 'ar');
+        break;
+      case 'EN':
+        this.currentLanguageName = 'English';
+        this.translate.use('en');
+        break;
+      default:
+        this.currentLanguageName = 'Français';
+        this.translate.use('fr');
+    }
+    
+    // Réinitialiser la direction pour les langues non-RTL
+    if (lang !== 'AR') {
+      document.documentElement.setAttribute('dir', 'ltr');
+      document.documentElement.setAttribute('lang', lang.toLowerCase());
+    }
+    
+    this.saveLanguagePreference();
+    console.log('Langue changée en:', lang);
+  }
+
+  private saveLanguagePreference(): void {
+    localStorage.setItem('language', this.currentLanguage);
+  }
+
+  private checkLanguagePreference(): void {
+    const savedLanguage = localStorage.getItem('language');
+    if (savedLanguage) {
+      this.currentLanguage = savedLanguage;
+      // Mettre à jour le nom de la langue
+      this.changeLanguage(savedLanguage);
+    }
   }
 
   // Changer le thème
@@ -185,6 +232,7 @@ export class DashboardComponent implements OnInit {
       alert('Veuillez entrer votre email');
     }
   }
+
 
   // Réserver une destination
   bookDestination(destination: Destination): void {
