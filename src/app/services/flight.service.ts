@@ -205,10 +205,81 @@ export class FlightService {
       remainingSeats: 45
     });
 
+    // Add direct flight to Dubai (DXB) which is commonly used in the app
+    this.addFlight({
+      flightNumber: 'TC-322',
+      departure: 'N\'Djamena',
+      departureCode: 'NDJ',
+      destination: 'Dubai',
+      destinationCode: 'DXB',
+      departureTime: '14:20',
+      arrivalTime: '19:05',
+      duration: '4h 45m',
+      price: 420000,
+      seatsAvailable: 85,
+      availableSeats: 85,
+      travelClass: 'economy',
+      airline: 'Tchad Airlines',
+      stops: 0,
+      baggageAllowance: '23kg',
+      cabinBaggage: '7kg',
+      mealIncluded: true,
+      wifi: true,
+      entertainment: false,
+      isOvernight: false,
+      aircraft: 'Boeing 737',
+      terminal: '1',
+      gate: 'B5',
+      status: 'onTime',
+      flightDuration: '4h 45m',
+      departureDate: this.formatDate(today),
+      arrivalDate: this.formatDate(today),
+      isFlexible: true,
+      remainingSeats: 32
+    });
+
+    // Add flight with stop
+    this.addFlight({
+      flightNumber: 'TC-590',
+      departure: 'N\'Djamena',
+      departureCode: 'NDJ',
+      destination: 'Abidjan',
+      destinationCode: 'ABJ',
+      departureTime: '10:15',
+      arrivalTime: '15:45',
+      duration: '5h 30m',
+      price: 280000,
+      seatsAvailable: 95,
+      availableSeats: 95,
+      travelClass: 'economy',
+      airline: 'Air Côte d\'Ivoire',
+      stops: 1,
+      baggageAllowance: '23kg',
+      cabinBaggage: '7kg',
+      mealIncluded: false,
+      wifi: true,
+      entertainment: true,
+      isOvernight: false,
+      aircraft: 'Airbus A320',
+      terminal: '1',
+      gate: 'C3',
+      status: 'onTime',
+      flightDuration: '5h 30m',
+      departureDate: this.formatDate(today),
+      arrivalDate: this.formatDate(today),
+      isFlexible: false,
+      remainingSeats: 28
+    });
+
     // Add more sample flights with different destinations and details
     const destinations = [
-      { city: 'Istanbul', code: 'IST', airline: 'Turkish Airlines', price: 380000, duration: '5h 30m' },
+      { city: 'Niamey', code: 'NIM', airline: 'Tchad Airlines', price: 180000, duration: '2h 15m' },
+      { city: 'Abidjan', code: 'ABJ', airline: 'Air Côte d\'Ivoire', price: 250000, duration: '3h 30m' },
+      { city: 'Douala', code: 'DLA', airline: 'Camair-Co', price: 220000, duration: '2h 45m' },
+      { city: 'Yaoundé', code: 'YAO', airline: 'Camair-Co', price: 230000, duration: '3h 0m' },
+      { city: 'New York', code: 'JFK', airline: 'Air France', price: 850000, duration: '12h 30m' },
       { city: 'Dubai', code: 'DXB', airline: 'Emirates', price: 420000, duration: '4h 45m' },
+      { city: 'Istanbul', code: 'IST', airline: 'Turkish Airlines', price: 380000, duration: '5h 30m' },
       { city: 'Johannesburg', code: 'JNB', airline: 'South African Airways', price: 550000, duration: '7h 15m' },
       { city: 'Nairobi', code: 'NBO', airline: 'Kenya Airways', price: 320000, duration: '4h 0m' },
       { city: 'Cairo', code: 'CAI', airline: 'EgyptAir', price: 280000, duration: '3h 30m' }
@@ -301,19 +372,34 @@ export class FlightService {
     const departureCode = criteria.departure ? extractAirportCode(criteria.departure) : null;
     const destinationCode = criteria.destination ? extractAirportCode(criteria.destination) : null;
 
-    const matchesDeparture = !departureCode || 
+    const matchesDeparture = !departureCode ||
       flight.departure.toLowerCase().includes(departureCode.toLowerCase()) ||
       flight.departureCode.toLowerCase() === departureCode.toLowerCase();
-    
+
     const matchesDestination = !destinationCode ||
       flight.destination.toLowerCase().includes(destinationCode.toLowerCase()) ||
       flight.destinationCode.toLowerCase() === destinationCode.toLowerCase();
-    
+
+    // Pour la date, on accepte tous les vols si une date est fournie (pour la démo)
+    // En production, on vérifierait la correspondance exacte
     const matchesDate = !criteria.date || flight.departureDate === criteria.date;
     const matchesClass = !criteria.travelClass || flight.travelClass === criteria.travelClass;
     const hasSeats = !criteria.passengers || flight.availableSeats >= criteria.passengers;
 
-    return matchesDeparture && matchesDestination && matchesDate && 
+    console.log('🔍 Filtrage vol:', {
+      flight: `${flight.flightNumber} ${flight.departure} -> ${flight.destination}`,
+      departureCode,
+      destinationCode,
+      matchesDeparture,
+      matchesDestination,
+      matchesDate,
+      matchesClass,
+      hasSeats,
+      flightSeats: flight.availableSeats,
+      requiredSeats: criteria.passengers
+    });
+
+    return matchesDeparture && matchesDestination && matchesDate &&
            matchesClass && hasSeats;
   }
 

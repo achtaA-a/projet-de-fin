@@ -1,0 +1,6 @@
+<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg">
+  <rect width="100" height="100" fill="#002157" stroke="#fff" stroke-width="2"/>
+  <text x="50" y="30" font-family="Arial, sans-serif" font-size="8" text-anchor="middle" fill="#fff" font-weight="bold">AIR</text>
+  <text x="50" y="45" font-family="Arial, sans-serif" font-size="8" text-anchor="middle" fill="#fff" font-weight="bold">FRANCE</text>
+  <rect x="35" y="55" width="30" height="15" fill="#ed1c24" stroke="#fff" stroke-width="1"/>
+</svg>

@@ -1,95 +1,126 @@
-<div id="step-4" class="step-content">
-    <h3 class="mb-4">Paiement sécurisé</h3>
-  
-    <div class="row">
-      <div class="col-md-7">
-        <div class="card">
-          <div class="card-header bg-light">
-            <h5 class="mb-0">Informations de paiement</h5>
+<div class="payment-container">
+  <div class="mb-6">
+    <h1 class="text-3xl font-bold text-gray-900 mb-4">Paiement sécurisé</h1>
+    <p class="text-gray-600">Finalisez votre réservation en toute sécurité</p>
+  </div>
+
+  <div class="grid lg:grid-cols-3 gap-8">
+    <div class="lg:col-span-2">
+      <div class="payment-card">
+        <h4 class="text-lg font-semibold mb-4">Informations de paiement</h4>
+
+        <div class="security-info">
+          <p class="text-blue-800 text-sm">Toutes les transactions sont sécurisées et cryptées</p>
+        </div>
+
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Titulaire de la carte</label>
+            <input type="text" class="form-input" placeholder="Nom comme sur la carte" [(ngModel)]="cardHolderName" name="cardHolderName">
           </div>
-          <div class="card-body">
-            <form id="payment-form">
-              <div class="mb-3">
-                <label class="form-label">Titulaire de la carte</label>
-                <input type="text" class="form-control" placeholder="Nom comme sur la carte" required>
-              </div>
-  
-              <div class="mb-3">
-                <label class="form-label">Numéro de carte</label>
-                <div class="input-group">
-                  <input #cardNumber type="text" class="form-control" id="card-number"
-                    placeholder="1234 5678 9012 3456" maxlength="23" required
-                    autocomplete="cc-number">
-                  <span class="input-group-text"><i class="fas fa-credit-card"
-                    id="card-type-icon"></i></span>
-                </div>
-                <small class="form-text text-muted">Visa, MasterCard, American Express acceptées</small>
-              </div>
-  
-              <div class="row">
-                <div class="col-md-6 mb-3">
-                  <label class="form-label">Date d'expiration</label>
-                  <input #expiryDate type="text" class="form-control" id="expiry-date" placeholder="MM/AA"
-                    maxlength="5" required autocomplete="cc-exp">
-                  <small class="form-text text-muted">Format: MM/AA</small>
-                </div>
-                <div class="col-md-6 mb-3">
-                  <label class="form-label">CVV</label>
-                  <input #cvv type="text" class="form-control" id="cvv" placeholder="123" maxlength="4"
-                    required autocomplete="cc-csc">
-                  <small class="form-text text-muted">3-4 chiffres au dos</small>
-                </div>
-              </div>
-  
-              <div class="form-check mb-4">
-                <input class="form-check-input" type="checkbox" id="save-card">
-                <label class="form-check-label" for="save-card">
-                  Enregistrer cette carte pour de futurs paiements
-                </label>
-              </div>
-  
-              <button type="button" class="btn td-btn-primary w-100" id="payment-btn"
-                (click)="processPaymentAndContinue()" [disabled]="isProcessing">
-                <span id="payment-btn-text">{{isProcessing ? 'Traitement en cours...' : 'Payer maintenant'}}</span>
-                <i class="fas" [class.fa-lock]="!isProcessing" [class.fa-spinner]="isProcessing" [class.fa-check]="paymentSuccess" id="payment-btn-icon"></i>
-              </button>
-            </form>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Numéro de carte</label>
+            <input type="text" class="form-input" placeholder="1234 5678 9012 3456" [(ngModel)]="cardNumber" name="cardNumber">
+          </div>
+
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Date d'expiration</label>
+              <input type="text" class="form-input" placeholder="MM/AA" [(ngModel)]="cardExpiry" name="cardExpiry">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">CVV</label>
+              <input type="text" class="form-input" placeholder="123" [(ngModel)]="cardCvv" name="cardCvv">
+            </div>
           </div>
         </div>
       </div>
-  
-      <div class="col-md-5">
-        <div class="card">
-          <div class="card-header bg-light">
-            <h5 class="mb-0">Récapitulatif</h5>
+
+      <div class="payment-card">
+        <h4 class="text-lg font-semibold mb-4">Adresse de facturation</h4>
+
+        <div class="space-y-4">
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Pays</label>
+              <select class="form-select" [(ngModel)]="billingAddress.country" name="billingCountry">
+                <option value="">Sélectionner un pays</option>
+                <option *ngFor="let country of countries" [value]="country.code">{{ country.name }}</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Ville</label>
+              <input type="text" class="form-input" placeholder="N'Djamena" [(ngModel)]="billingAddress.city" name="billingCity">
+            </div>
           </div>
-          <div class="card-body">
-            <div class="d-flex justify-content-between mb-2">
-              <span>Vol aller-retour</span>
-              <span>{{flightPrice.toLocaleString('fr-FR')}} XAF</span>
-            </div>
-            <div class="d-flex justify-content-between mb-2">
-              <span>Taxes et frais</span>
-              <span>{{taxes.toLocaleString('fr-FR')}} XAF</span>
-            </div>
-            <hr>
-            <div class="d-flex justify-content-between mb-3">
-              <strong>Total</strong>
-              <strong class="price-display">{{total.toLocaleString('fr-FR')}} XAF</strong>
-            </div>
-  
-            <div class="alert alert-info mt-3">
-              <i class="fas fa-info-circle me-2"></i>
-              <small>Prix total pour 1 passager en classe Économique</small>
-            </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Adresse</label>
+            <input type="text" class="form-input mb-2" placeholder="Adresse ligne 1" [(ngModel)]="billingAddress.address1" name="billingAddress1">
+            <input type="text" class="form-input" placeholder="Adresse ligne 2 (optionnel)" [(ngModel)]="billingAddress.address2" name="billingAddress2">
           </div>
         </div>
-  
-        <div class="d-flex justify-content-between mt-3">
-          <button type="button" class="btn btn-secondary" (click)="prevStep(4)">
-            <i class="fas fa-arrow-left me-2"></i> Retour
+      </div>
+    </div>
+
+    <div>
+      <div class="payment-card">
+        <h4 class="text-lg font-semibold mb-4">Récapitulatif</h4>
+
+        <div class="space-y-4">
+          <div>
+            <h6 class="font-semibold mb-3">Détails du vol</h6>
+            <div class="text-sm">
+              <div class="flex justify-between mb-2">
+                <span class="text-gray-600">Aller</span>
+                <span class="font-medium">{{ selectedFlight?.departure }} → {{ selectedFlight?.destination }}</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-500">Vol</span>
+                <span>{{ selectedFlight?.airline }} {{ selectedFlight?.flightNumber }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="border-t pt-4">
+            <div class="flex justify-between mb-2">
+              <span>Prix du vol</span>
+              <span>{{ calculateGrandTotal() | currency:'XAF':'symbol':'1.0-0' }}</span>
+            </div>
+            <div class="flex justify-between font-bold text-lg">
+              <span>Total</span>
+              <span class="text-blue-600">{{ calculateGrandTotal() | currency:'XAF':'symbol':'1.0-0' }}</span>
+            </div>
+          </div>
+
+          <div class="flex items-center space-x-2 mt-4">
+            <input type="checkbox" class="form-checkbox" [(ngModel)]="termsAccepted" id="termsAccepted">
+            <label class="text-xs text-gray-700" for="termsAccepted">
+              J'accepte les <a href="#" class="text-blue-600 hover:underline">conditions générales</a>
+            </label>
+          </div>
+
+          <button class="btn btn-payment"
+                  [disabled]="!termsAccepted || isProcessingPayment"
+                  (click)="processPayment()">
+            <span *ngIf="!isProcessingPayment; else processing">
+              <i class="fas fa-lock mr-2"></i>
+              Payer maintenant {{ calculateGrandTotal() | currency:'XAF':'symbol':'1.0-0' }}
+            </span>
+            <ng-template #processing>
+              <i class="fas fa-spinner processing-spinner mr-2"></i>
+              Traitement...
+            </ng-template>
           </button>
         </div>
       </div>
     </div>
   </div>
+
+  <div class="text-center mt-8">
+    <button class="btn btn-back" (click)="previousStep()">
+      <i class="fas fa-arrow-left mr-2"></i> Retour
+    </button>
+  </div>
+</div>
