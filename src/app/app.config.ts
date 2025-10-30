@@ -37,6 +37,6 @@ export const appConfig: ApplicationConfig = {
       progressBar: true,
       closeButton: true
     }),
-    NgbModalModule
+    NgbModalModule,
   ]
 };

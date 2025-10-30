@@ -46,6 +46,15 @@
         </li>
         
         <li class="nav-item">
+          <a class="nav-link" [routerLink]="['/admin']" 
+             [routerLinkActive]="['active']"
+             (click)="isMenuCollapsed = true">
+            <i class="fas fa-cog d-lg-none me-2"></i>
+            Administration
+          </a>
+        </li>
+        
+        <li class="nav-item">
           <a class="nav-link" href="#promotions" 
              (click)="scrollTo('promotions'); isMenuCollapsed = true; $event.preventDefault()">
             <i class="fas fa-percentage d-lg-none me-2"></i>

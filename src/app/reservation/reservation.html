@@ -1,175 +1,236 @@
-<!-- Section de réservation -->
-<section class="section" id="booking">
-    <div class="container">
-        <div class="card">
-            <div class="section-header">
-                <h2 class="section-title">
-                    <i class="fas fa-plane-departure me-2"></i>
-                    Réservez votre vol
-                </h2>
-                <p class="text-muted">Trouvez et réservez votre vol en quelques clics</p>
+<div class="reservation-container">
+    <!-- Indicateur d'étapes -->
+    <div class="steps-indicator">
+      <div [class.active]="currentStep === 1" [class.completed]="currentStep > 1">
+        <span>1</span> Recherche
+      </div>
+      <div [class.active]="currentStep === 2" [class.completed]="currentStep > 2">
+        <span>2</span> Vols
+      </div>
+      <div [class.active]="currentStep === 3" [class.completed]="currentStep > 3">
+        <span>3</span> Passagers
+      </div>
+      <div [class.active]="currentStep === 4" [class.completed]="currentStep > 4">
+        <span>4</span> Paiement
+      </div>
+      <div [class.active]="currentStep === 5">
+        <span>5</span> Confirmation
+      </div>
+    </div>
+  
+    <!-- Afficher la destination sélectionnée -->
+    <div *ngIf="destinationSelectionnee && currentStep === 1" class="selected-destination-alert">
+      <div class="alert alert-info">
+        <h6>🎯 Destination sélectionnée :</h6>
+        <div class="destination-info">
+          <strong>{{ destinationSelectionnee.nom }} ({{ destinationSelectionnee.code }})</strong>
+          <br>
+          <small>Durée du vol: {{ destinationSelectionnee.dureeVol }} • À partir de {{ destinationSelectionnee.prix }} FCFA</small>
+        </div>
+      </div>
+    </div>
+  
+    <!-- Étape 1 : Recherche de vols -->
+    <div *ngIf="currentStep === 1" class="step-container">
+      <h3>Rechercher un vol</h3>
+      
+      <div *ngIf="chargement" class="loading">Chargement des destinations...</div>
+  
+      <form #searchForm="ngForm" (ngSubmit)="searchFlights(searchForm)" *ngIf="!chargement">
+        <!-- MODIFICATION: Sélection du point de départ -->
+        <div class="form-group">
+          <label>Départ *</label>
+          <select 
+            [(ngModel)]="flightSearch.departure" 
+            name="departure" 
+            required 
+            class="form-control"
+            (change)="onDepartureChange()">
+            <option value="">Sélectionnez un point de départ</option>
+            <option *ngFor="let aeroport of aeroportsDepart" [value]="aeroport.code">
+              {{ aeroport.code }} - {{ aeroport.ville }} ({{ aeroport.pays }})
+            </option>
+          </select>
+          <small class="form-text text-muted">Choisissez votre aéroport de départ</small>
+        </div>
+  
+        <div class="form-group">
+          <label>Destination *</label>
+          <select 
+            [(ngModel)]="flightSearch.destination" 
+            name="destination" 
+            required 
+            class="form-control"
+            (change)="onDestinationChange()">
+            <option value="">Sélectionnez une destination</option>
+            <option *ngFor="let dest of destinations" [value]="dest.code" 
+                    [disabled]="dest.code === flightSearch.departure">
+              {{ dest.nom }} ({{ dest.code }})
+            </option>
+          </select>
+          <small class="form-text text-muted" *ngIf="flightSearch.departure">
+            Vols disponibles depuis {{ getDepartureName(flightSearch.departure) }}
+          </small>
+        </div>
+  
+        <div class="form-row">
+          <div class="form-group">
+            <label>Date de départ *</label>
+            <input 
+              type="date" 
+              [(ngModel)]="flightSearch.departureDate" 
+              name="departureDate" 
+              [min]="today"
+              required 
+              class="form-control">
+          </div>
+  
+          <div class="form-group">
+            <label>Date de retour</label>
+            <input 
+              type="date" 
+              [(ngModel)]="flightSearch.returnDate" 
+              name="returnDate" 
+              [min]="flightSearch.departureDate || today"
+              class="form-control">
+          </div>
+        </div>
+  
+        <div class="form-row">
+          <div class="form-group">
+            <label>Passagers</label>
+            <select 
+              [(ngModel)]="flightSearch.passengers" 
+              name="passengers" 
+              class="form-control"
+              (change)="onPassengersChange()">
+              <option *ngFor="let i of [1,2,3,4,5,6]" [value]="i">{{ i }} passager(s)</option>
+            </select>
+          </div>
+  
+          <div class="form-group">
+            <label>Classe</label>
+            <select 
+              [(ngModel)]="flightSearch.travelClass" 
+              name="travelClass" 
+              class="form-control"
+              (change)="onClassChange()">
+              <option value="economy">Économique</option>
+              <option value="business">Affaires</option>
+              <option value="first">Première</option>
+            </select>
+          </div>
+        </div>
+  
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary" [disabled]="searchForm.invalid">
+            Rechercher les vols
+          </button>
+        </div>
+      </form>
+    </div>
+  
+    <!-- Étape 3 : Informations des passagers -->
+    <div *ngIf="currentStep === 3" class="step-container">
+      <h3>Informations des passagers</h3>
+      <p class="price-info">Prix total: <strong>{{ prixTotal | currency:'XAF':'symbol':'1.0-0' }}</strong></p>
+      
+      <form #passagerForm="ngForm">
+        <div *ngFor="let p of passagers; let i = index" class="passager-card">
+          <h5>Passager {{ i + 1 }} {{ i === 0 ? '(Adulte)' : '' }}</h5>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label>Prénom *</label>
+              <input 
+                type="text" 
+                [(ngModel)]="p.prenom" 
+                [name]="'prenom' + i" 
+                required 
+                class="form-control"
+                placeholder="Prénom">
             </div>
-
-            <!-- Barre de progression -->
-            <div class="steps-container mb-4">
-                <div class="step" [class.active]="currentStep === 1" [class.completed]="currentStep > 1">
-                    <div class="step-number">1</div>
-                    <div class="step-label">Recherche</div>
-                </div>
-                <div class="step" [class.active]="currentStep === 2" [class.completed]="currentStep > 2">
-                    <div class="step-number">2</div>
-                    <div class="step-label">Vols</div>
-                </div>
-                <div class="step" [class.active]="currentStep === 3" [class.completed]="currentStep > 3">
-                    <div class="step-number">3</div>
-                    <div class="step-label">Voyageurs</div>
-                </div>
-                <div class="step" [class.active]="currentStep === 4" [class.completed]="currentStep > 4">
-                    <div class="step-number">4</div>
-                    <div class="step-label">Paiement</div>
-                </div>
-                <div class="step" [class.active]="currentStep === 5">
-                    <div class="step-number">5</div>
-                    <div class="step-label">Confirmation</div>
-                </div>
+            
+            <div class="form-group">
+              <label>Nom *</label>
+              <input 
+                type="text" 
+                [(ngModel)]="p.nom" 
+                [name]="'nom' + i" 
+                required 
+                class="form-control"
+                placeholder="Nom">
             </div>
-
-            <!-- Étape 1: Recherche de vol -->
-            <div *ngIf="currentStep === 1" id="step-1" class="step-content">
-                <h3 class="mb-4 text-center">Recherchez votre vol</h3>
-
-                <!-- Recherches récentes -->
-                <div *ngIf="recentSearches.length > 0" class="card mb-4">
-                    <div class="card-body">
-                        <h5 class="mb-3"><i class="fas fa-history me-2"></i>Recherches récentes</h5>
-                        <div class="d-flex flex-wrap gap-3">
-                            <div *ngFor="let search of recentSearches" class="recent-search-item p-3 border rounded" 
-                                 (click)="useRecentSearch(search)" style="cursor: pointer;">
-                                <div class="fw-bold text-primary">{{ getDestinationName(search.destination) }}</div>
-                                <div class="text-muted small">{{ formatDate(search.departureDate) }}</div>
-                                <div *ngIf="search.returnDate" class="text-muted small">
-                                    Retour: {{ formatDate(search.returnDate) }}
-                                </div>
-                                <div class="mt-1">
-                                    <span class="badge bg-secondary">
-                                        {{ search.passengers }} {{ search.passengers > 1 ? 'voyageurs' : 'voyageur' }}
-                                    </span>
-                                    <span class="badge ms-1" 
-                                          [ngClass]="{
-                                            'bg-info text-dark': search.travelClass === 'economy',
-                                            'bg-warning': search.travelClass === 'business',
-                                            'bg-dark': search.travelClass === 'first'
-                                          }">
-                                        {{ search.travelClass === 'economy' ? 'Éco' : 
-                                           search.travelClass === 'business' ? 'Affaires' : 'Première' }}
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <form (ngSubmit)="searchFlights(searchForm); $event.preventDefault()" #searchForm="ngForm" class="mt-4">
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Ville de départ</label>
-                            <div class="input-group">
-                                <span class="input-group-text bg-light"><i class="fas fa-plane-departure"></i></span>
-                                <input type="text" class="form-control" name="departure" [(ngModel)]="flightSearch.departure" value="NDJ" readonly>
-                            </div>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Ville de destination <span class="text-danger">*</span></label>
-                            <div class="input-group" [class.is-invalid]="searchForm.submitted && (destination.invalid || !flightSearch.destination)">
-                                <span class="input-group-text bg-light"><i class="fas fa-plane-arrival"></i></span>
-                                <select class="form-select" id="destination" 
-                                        [(ngModel)]="flightSearch.destination" 
-                                        name="destination" 
-                                        required
-                                        (ngModelChange)="updateDestinationCode()"
-                                        #destination="ngModel">
-                                    <option value="">Sélectionnez une destination</option>
-                                    <option *ngFor="let dest of destinations" [value]="dest.name">
-                                        {{ dest.name }} ({{ dest.code }})
-                                    </option>
-                                </select>
-                            </div>
-                            <div *ngIf="searchForm.submitted && destination.invalid" class="invalid-feedback d-block">
-                                Veuillez sélectionner une destination
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Date de départ <span class="text-danger">*</span></label>
-                            <div class="input-group">
-                                <span class="input-group-text bg-light"><i class="far fa-calendar-alt"></i></span>
-                                <input type="date" class="form-control" 
-                                       [(ngModel)]="flightSearch.departureDate" 
-                                       name="departureDate" 
-                                       [min]="today"
-                                       required>
-                            </div>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Date de retour (optionnel)</label>
-                            <div class="input-group">
-                                <span class="input-group-text bg-light"><i class="far fa-calendar-alt"></i></span>
-                                <input type="date" class="form-control" 
-                                       [(ngModel)]="flightSearch.returnDate" 
-                                       name="returnDate"
-                                       [min]="flightSearch.departureDate || today">
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="row">
-                        <div class="col-md-4 mb-3">
-                            <label class="form-label">Passagers <span class="text-danger">*</span></label>
-                            <div class="input-group" [class.is-invalid]="searchForm.submitted && (passengers.invalid || flightSearch.passengers === 0)">
-                                <span class="input-group-text bg-light"><i class="fas fa-users"></i></span>
-                                <select class="form-select" 
-                                        [(ngModel)]="flightSearch.passengers" 
-                                        name="passengers" 
-                                        #passengers="ngModel"
-                                        required
-                                        [class.is-invalid]="searchForm.submitted && (passengers.invalid || flightSearch.passengers === 0)">
-                                    <option [ngValue]="0" disabled>Sélectionnez le nombre</option>
-                                    <option *ngFor="let i of [1,2,3,4,5,6,7,8,9]" [ngValue]="i">
-                                        {{ i }} {{ i > 1 ? 'voyageurs' : 'voyageur' }}
-                                    </option>
-                                </select>
-                            </div>
-                            <div *ngIf="searchForm.submitted && (passengers.invalid || flightSearch.passengers === 0)" class="invalid-feedback d-block">
-                                Veuillez sélectionner le nombre de passagers
-                            </div>
-                        </div>
-                        <div class="col-md-4 mb-3">
-                            <label class="form-label">Classe <span class="text-danger">*</span></label>
-                            <div class="input-group" [class.is-invalid]="searchForm.submitted && (travelClass.invalid || !flightSearch.travelClass)">
-                                <span class="input-group-text bg-light"><i class="fas fa-chair"></i></span>
-                                <select class="form-select" 
-                                        [(ngModel)]="flightSearch.travelClass" 
-                                        name="travelClass" 
-                                        #travelClass="ngModel"
-                                        required>
-                                    <option value="">Sélectionnez une classe</option>
-                                    <option value="economy">Économique</option>
-                                    <option value="business">Affaires</option>
-                                    <option value="first">Première classe</option>
-                                </select>
-                            </div>
-                            <div *ngIf="searchForm.submitted && travelClass.invalid" class="invalid-feedback d-block">
-                                Veuillez sélectionner une classe
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="text-center mt-4">
-                        <button type="button" class="btn btn-primary btn-lg" (click)="searchFlights(searchForm)">
-                            Rechercher des vols <i class="fas fa-search ms-2"></i>
-                        </button>
-                    </div>
-                </form>
+          </div>
+  
+          <div class="form-row">
+            <div class="form-group">
+              <label>Date de naissance *</label>
+              <input 
+                type="date" 
+                [(ngModel)]="p.dateNaissance" 
+                [name]="'dateNaissance' + i" 
+                required 
+                [max]="today"
+                class="form-control">
             </div>
+            
+            <div class="form-group">
+              <label>Numéro de passeport *</label>
+              <input 
+                type="text" 
+                [(ngModel)]="p.numeroPasseport" 
+                [name]="'passeport' + i" 
+                required 
+                class="form-control"
+                placeholder="Numéro de passeport">
+            </div>
+          </div>
+        </div>
+  
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary" (click)="precedent()">
+            Retour
+          </button>
+          <button type="button" class="btn btn-primary" (click)="validerPassagers()">
+            Continuer
+          </button>
+        </div>
+      </form>
+    </div>
+  
+    <!-- Étape 4 : Confirmation -->
+    <div *ngIf="currentStep === 4" class="step-container">
+      <h3>Confirmation de réservation</h3>
+      
+      <div class="reservation-summary">
+        <h5>Détails du vol</h5>
+        <p><strong>Départ:</strong> {{ getDepartureName(flightSearch.departure) }}</p>
+        <p><strong>Destination:</strong> {{ getDestinationName(flightSearch.destination) }}</p>
+        <p><strong>Date de départ:</strong> {{ formatDate(flightSearch.departureDate) }}</p>
+        <p *ngIf="flightSearch.returnDate"><strong>Date de retour:</strong> {{ formatDate(flightSearch.returnDate) }}</p>
+        <p><strong>Passagers:</strong> {{ flightSearch.passengers }}</p>
+        <p><strong>Classe:</strong> {{ flightSearch.travelClass }}</p>
+        <p><strong>Prix total:</strong> {{ prixTotal | currency:'XAF':'symbol':'1.0-0' }}</p>
+      </div>
+  
+      <div class="form-actions">
+        <button type="button" class="btn btn-secondary" (click)="precedent()">
+          Retour
+        </button>
+        <button type="button" class="btn btn-success" (click)="creerReservation()">
+          Confirmer la réservation
+        </button>
+      </div>
+    </div>
+  
+    <!-- Étape 5 : Confirmation finale -->
+    <div *ngIf="currentStep === 5" class="step-container confirmation">
+      <div class="confirmation-icon">✓</div>
+      <h3>Réservation confirmée !</h3>
+      <p>Merci pour votre réservation. Vous recevrez un email de confirmation sous peu.</p>
+      <button type="button" class="btn btn-primary" routerLink="/">
+        Retour à l'accueil
+      </button>
+    </div>
+  </div>

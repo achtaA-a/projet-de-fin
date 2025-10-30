@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <rect width="100" height="100" fill="#002157"/>
+  <text x="50" y="40" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="white" text-anchor="middle">AIR</text>
+  <text x="50" y="65" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#EF4135" text-anchor="middle">FRANCE</text>
+  <path d="M 30 75 L 50 70 L 70 75 L 50 80 Z" fill="#EF4135"/>
+</svg>

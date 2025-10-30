@@ -1,12 +1,10 @@
 import { Routes } from '@angular/router';
 import { MainLayoutComponent } from './layout/main-layout/main-layout.component';
-import { DashboardComponent } from './dashboard/dashboard';
-import { ChoixVolComponent } from './choix-vol/choix-vol';
-import { InfoVoyageurComponent } from './info-voyageur/info-voyageur';
-import { PaiementComponent } from './paiement/paiement';
-import { ConfirmationComponent } from './confirmation/confirmation';
+import { DashboardComponent } from './dashboard/dashboard'; // Correction: .component
 import { ReservationComponent } from './reservation/reservation.component';
-
+import { ListDestina } from './list-destina/list-destina'; // Correction: nom et extension
+import { Creatdestina } from './creatdestina/creatdestina'; // Correction: nom et extension
+import { ReservationManagement } from './reservation-management./reservation-management'; // Correction: nom et extension
 export const routes: Routes = [
   {
     path: '',
@@ -14,10 +12,14 @@ export const routes: Routes = [
     children: [
       { path: '', component: DashboardComponent },
       { path: 'reservation', component: ReservationComponent },
-      { path: 'choix-vol', component: ChoixVolComponent },
-      { path: 'info-voyageur', component: InfoVoyageurComponent },
-      { path: 'paiement', component: PaiementComponent },
-      { path: 'confirmation', component: ConfirmationComponent },
-    ]
-  }
+      { path: 'destinations', component: ListDestina }, // Correction: nom
+      { path: 'creer', component: Creatdestina }, // Correction: nom
+      { path: 'Liste', component: ReservationManagement }, // Doit maintenant fonctionner
+
+    
+    ],
+    
+  },
+  // Route de fallback
+  { path: '**', redirectTo: '' }
 ];

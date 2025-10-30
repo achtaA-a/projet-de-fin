@@ -1,0 +1,203 @@
+<div class="container mt-4">
+    <div class="row justify-content-center">
+      <div class="col-lg-8">
+        <div class="card">
+          <div class="card-header bg-primary text-white">
+            <h4 class="mb-0">
+              <i class="fas fa-plus-circle me-2"></i>Créer une nouvelle destination
+            </h4>
+          </div>
+          <div class="card-body">
+            <!-- Messages d'alerte -->
+            <div *ngIf="erreur" class="alert alert-danger alert-dismissible fade show">
+              <i class="fas fa-exclamation-triangle me-2"></i>{{ erreur }}
+              <button type="button" class="btn-close" (click)="erreur = null"></button>
+            </div>
+  
+            <div *ngIf="succes" class="alert alert-success alert-dismissible fade show">
+              <i class="fas fa-check-circle me-2"></i>{{ succes }}
+              <button type="button" class="btn-close" (click)="succes = null"></button>
+            </div>
+  
+            <form [formGroup]="destinationForm" (ngSubmit)="onSubmit()" enctype="multipart/form-data">
+              <div class="row">
+                <!-- Colonne gauche -->
+                <div class="col-md-6">
+                  <!-- Nom de la destination -->
+                  <div class="mb-3">
+                    <label for="nom" class="form-label">Nom de la destination *</label>
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="nom"
+                      formControlName="nom"
+                      [class.is-invalid]="nom?.invalid && nom?.touched"
+                      placeholder="Ex: Paris">
+                    <div class="invalid-feedback" *ngIf="nom?.errors?.['required'] && nom?.touched">
+                      Le nom est obligatoire
+                    </div>
+                    <div class="invalid-feedback" *ngIf="nom?.errors?.['minlength'] && nom?.touched">
+                      Le nom doit contenir au moins 2 caractères
+                    </div>
+                  </div>
+  
+                  <!-- Code de la destination -->
+                  <div class="mb-3">
+                    <label for="code" class="form-label">Code IATA *</label>
+                    <input
+                      type="text"
+                      class="form-control text-uppercase"
+                      id="code"
+                      formControlName="code"
+                      [class.is-invalid]="code?.invalid && code?.touched"
+                      placeholder="Ex: PAR"
+                      maxlength="3">
+                    <div class="invalid-feedback" *ngIf="code?.errors?.['required'] && code?.touched">
+                      Le code IATA est obligatoire
+                    </div>
+                    <div class="invalid-feedback" *ngIf="code?.errors?.['pattern'] && code?.touched">
+                      Le code doit contenir exactement 3 lettres majuscules
+                    </div>
+                    <small class="form-text text-muted">3 lettres majuscules (ex: CDG, JFK)</small>
+                  </div>
+  
+                  <!-- Prix -->
+                  <div class="mb-3">
+                    <label for="prix" class="form-label">Prix (FCFA) *</label>
+                    <div class="input-group">
+                      <input
+                        type="text"
+                        class="form-control"
+                        id="prix"
+                        formControlName="prix"
+                        [class.is-invalid]="prix?.invalid && prix?.touched"
+                        placeholder="Ex: 250000">
+                      <span class="input-group-text">FCFA</span>
+                    </div>
+                    <div class="invalid-feedback" *ngIf="prix?.errors?.['required'] && prix?.touched">
+                      Le prix est obligatoire
+                    </div>
+                    <div class="invalid-feedback" *ngIf="prix?.errors?.['pattern'] && prix?.touched">
+                      Le prix doit être un nombre valide
+                    </div>
+                  </div>
+  
+                  <!-- Durée du vol -->
+                  <div class="mb-3">
+                    <label for="dureeVol" class="form-label">Durée du vol *</label>
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="dureeVol"
+                      formControlName="dureeVol"
+                      [class.is-invalid]="dureeVol?.invalid && dureeVol?.touched"
+                      placeholder="Ex: 2h30">
+                    <div class="invalid-feedback" *ngIf="dureeVol?.errors?.['required'] && dureeVol?.touched">
+                      La durée du vol est obligatoire
+                    </div>
+                  </div>
+                </div>
+  
+                <!-- Colonne droite -->
+                <div class="col-md-6">
+                  <!-- Vols par semaine -->
+                  <div class="mb-3">
+                    <label for="volsParSemaine" class="form-label">Vols par semaine *</label>
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="volsParSemaine"
+                      formControlName="volsParSemaine"
+                      [class.is-invalid]="volsParSemaine?.invalid && volsParSemaine?.touched"
+                      placeholder="Ex: 28">
+                    <div class="invalid-feedback" *ngIf="volsParSemaine?.errors?.['required'] && volsParSemaine?.touched">
+                      Le nombre de vols est obligatoire
+                    </div>
+                    <div class="invalid-feedback" *ngIf="volsParSemaine?.errors?.['pattern'] && volsParSemaine?.touched">
+                      Doit être un nombre valide
+                    </div>
+                  </div>
+  
+                  <!-- Type d'avion -->
+                  <div class="mb-3">
+                    <label for="avion" class="form-label">Type d'avion *</label>
+                    <select
+                      class="form-select"
+                      id="avion"
+                      formControlName="avion"
+                      [class.is-invalid]="avion?.invalid && avion?.touched">
+                      <option value="">Sélectionnez un avion</option>
+                      <option *ngFor="let avion of avionsDisponibles" [value]="avion">
+                        {{ avion }}
+                      </option>
+                    </select>
+                    <div class="invalid-feedback" *ngIf="avion?.errors?.['required'] && avion?.touched">
+                      Le type d'avion est obligatoire
+                    </div>
+                  </div>
+  
+                  <!-- Upload d'image -->
+                  <div class="mb-3">
+                    <label for="image" class="form-label">Image de la destination *</label>
+                    <input
+                      type="file"
+                      class="form-control"
+                      id="image"
+                      accept="image/jpeg, image/png, image/webp"
+                      (change)="onImageSelectionnee($event)"
+                      [class.is-invalid]="!fichierImage && destinationForm.touched">
+                    <div class="invalid-feedback" *ngIf="!fichierImage && destinationForm.touched">
+                      Une image est obligatoire
+                    </div>
+                    <small class="form-text text-muted">
+                      Formats acceptés: JPG, PNG, WebP (max 5MB)
+                    </small>
+                  </div>
+  
+                  <!-- Prévisualisation de l'image -->
+                  <div class="mb-3" *ngIf="imagePreview">
+                    <label class="form-label">Aperçu de l'image</label>
+                    <div class="image-preview-container">
+                      <img [src]="imagePreview" class="img-thumbnail preview-image" alt="Aperçu">
+                      <button type="button" class="btn btn-sm btn-danger mt-2" (click)="supprimerImage()">
+                        <i class="fas fa-trash me-1"></i>Supprimer
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+  
+              <!-- Coordonnées (optionnelles) -->
+              <div class="row mt-3">
+                <div class="col-md-6">
+                  <label for="latitude" class="form-label">Latitude</label>
+                  <input type="number" class="form-control" id="latitude" formControlName="latitude" step="any">
+                </div>
+                <div class="col-md-6">
+                  <label for="longitude" class="form-label">Longitude</label>
+                  <input type="number" class="form-control" id="longitude" formControlName="longitude" step="any">
+                </div>
+              </div>
+  
+              <!-- Boutons de soumission -->
+              <div class="mt-4 d-flex gap-2">
+                <button type="submit" class="btn btn-primary" [disabled]="chargement">
+                  <span *ngIf="chargement" class="spinner-border spinner-border-sm me-2"></span>
+                  <i class="fas fa-save me-2" *ngIf="!chargement"></i>
+                  {{ chargement ? 'Création...' : 'Créer la destination' }}
+                </button>
+                
+                <button type="button" class="btn btn-secondary" (click)="destinationForm.reset({ estActif: true }); supprimerImage()">
+                  <i class="fas fa-undo me-2"></i>Réinitialiser
+                </button>
+  
+                <button type="button" class="btn btn-outline-secondary ms-auto" routerLink="/destinations">
+                  <i class="fas fa-arrow-left me-2"></i>Retour
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>

@@ -1,224 +1,314 @@
 import { Component, OnInit } from '@angular/core';
-import { NgForm } from '@angular/forms';
+import { NgForm, FormsModule } from '@angular/forms';
+import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { NgbTooltipModule } from '@ng-bootstrap/ng-bootstrap';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 
-interface FlightSearch {
-  departure: string;
-  destination: string;
-  departureDate: string;
-  returnDate: string;
-  passengers: number;
-  travelClass: string;
-}
-
-interface RecentSearch {
-  destination: string;
-  departureDate: string;
-  returnDate?: string;
-  passengers: number;
-  travelClass: string;
+interface Aeroport {
+  code: string;
+  nom: string;
+  ville: string;
+  pays: string;
 }
 
 interface Destination {
-  name: string;
+  _id: string;
+  nom: string;
   code: string;
+  prix: string;
+  dureeVol: string;
+  image: string;
+}
+
+interface Passager {
+  prenom: string;
+  nom: string;
+  dateNaissance: string;
+  numeroPasseport: string;
 }
 
 @Component({
   selector: 'app-reservation',
-  standalone: true,
-  imports: [CommonModule, FormsModule, NgbTooltipModule],
   templateUrl: './reservation.html',
-  styleUrls: ['./reservation.css']
+  styleUrls: ['./reservation.css'],
+  imports: [CommonModule, FormsModule],
+  standalone: true
 })
 export class ReservationComponent implements OnInit {
   currentStep = 1;
-  today = new Date().toISOString().split('T')[0];
-  isLoading = false;
+  today: string = new Date().toISOString().split('T')[0];
 
-  flightSearch: FlightSearch = {
-    departure: 'NDJ',
+  // AJOUT: Liste des aéroports de départ
+  aeroportsDepart: Aeroport[] = [];
+  destinationSelectionnee: Destination | null = null;
+  destinations: Destination[] = [];
+  recentSearches: any[] = [];
+  
+  flightSearch = {
+    departure: '', // MODIFICATION: Plus en dur
     destination: '',
+    destinationId: '',
     departureDate: '',
     returnDate: '',
-    passengers: 0,
-    travelClass: ''
+    passengers: 1,
+    travelClass: 'economy'
   };
 
-  recentSearches: RecentSearch[] = [
-    {
-      destination: 'Paris (CDG)',
-      departureDate: '2024-02-15',
-      returnDate: '2024-02-20',
-      passengers: 2,
-      travelClass: 'economy'
-    },
-    {
-      destination: 'Dubai (DXB)',
-      departureDate: '2024-03-01',
-      passengers: 1,
-      travelClass: 'business'
+  passagers: Passager[] = [];
+  prixTotal: number = 0;
+  chargement = false;
+
+  constructor(
+    private http: HttpClient,
+    private router: Router,
+    private route: ActivatedRoute
+  ) {}
+
+  ngOnInit(): void {
+    this.chargerAeroportsDepart(); // NOUVELLE MÉTHODE
+    this.recupererDestination();
+    this.loadDestinations();
+  }
+
+  // NOUVELLE MÉTHODE: Charger les aéroports de départ
+  chargerAeroportsDepart() {
+    // Données des aéroports disponibles
+    this.aeroportsDepart = [
+      { code: 'NDJ', nom: 'Aéroport International de N\'Djamena', ville: 'N\'Djamena', pays: 'Tchad' },
+      { code: 'MQQ', nom: 'Aéroport de Moundou', ville: 'Moundou', pays: 'Tchad' },
+      { code: 'AEH', nom: 'Aéroport d\'Abéché', ville: 'Abéché', pays: 'Tchad' },
+      { code: 'FYT', nom: 'Aéroport de Faya-Largeau', ville: 'Faya-Largeau', pays: 'Tchad' },
+      { code: 'SRH', nom: 'Aéroport de Sarh', ville: 'Sarh', pays: 'Tchad' }
+    ];
+
+    // Définir N'Djamena comme départ par défaut
+    this.flightSearch.departure = 'NDJ';
+  }
+
+  recupererDestination() {
+    const navigation = this.router.getCurrentNavigation();
+    if (navigation?.extras?.state?.['destination']) {
+      this.destinationSelectionnee = navigation.extras.state['destination'];
+      this.preRemplirFormulaire();
     }
-  ];
+    
+    this.route.queryParams.subscribe(params => {
+      if (params['destinationId']) {
+        this.flightSearch.destinationId = params['destinationId'];
+        this.chargerDetailsDestination(params['destinationId']);
+      }
+    });
 
-  destinations: Destination[] = [
-    { name: 'Paris (CDG)', code: 'CDG' },
-    { name: 'Dubai (DXB)', code: 'DXB' },
-    { name: 'Istanbul (IST)', code: 'IST' },
-    { name: 'Addis Ababa (ADD)', code: 'ADD' },
-    { name: 'Cairo (CAI)', code: 'CAI' }
-  ];
-
-  selectedFlight: any = null;
-  availableFlights: any[] = [];
-
-  constructor(private router: Router) {}
-
-  ngOnInit() {}
-
-  useRecentSearch(search: RecentSearch): void {
-    this.flightSearch.destination = search.destination;
-    this.flightSearch.departureDate = search.departureDate;
-    this.flightSearch.returnDate = search.returnDate || '';
-    this.flightSearch.passengers = search.passengers;
-    this.flightSearch.travelClass = search.travelClass;
+    const storedDestination = localStorage.getItem('selectedDestination');
+    if (storedDestination) {
+      this.destinationSelectionnee = JSON.parse(storedDestination);
+      this.preRemplirFormulaire();
+      localStorage.removeItem('selectedDestination');
+    }
   }
 
-  getDestinationName(destination: string): string {
-    const dest = this.destinations.find(d => d.name === destination);
-    return dest ? dest.name : destination;
+  preRemplirFormulaire() {
+    if (this.destinationSelectionnee) {
+      this.flightSearch.destination = this.destinationSelectionnee.code;
+      this.flightSearch.destinationId = this.destinationSelectionnee._id;
+      this.calculerPrix();
+    }
   }
 
-  formatDate(dateString: string): string {
-    if (!dateString) return '';
-    const date = new Date(dateString);
-    return date.toLocaleDateString('fr-FR', {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric'
+  calculerPrix() {
+    if (this.destinationSelectionnee) {
+      const prixBase = parseInt(this.destinationSelectionnee.prix) || 50000;
+      const classMultiplier = this.flightSearch.travelClass === 'economy' ? 1 :
+                              this.flightSearch.travelClass === 'business' ? 1.5 : 2;
+      this.prixTotal = prixBase * this.flightSearch.passengers * classMultiplier;
+    }
+  }
+
+  chargerDetailsDestination(destinationId: string) {
+    this.http.get<any>(`http://localhost:3000/api/destinations/${destinationId}`).subscribe({
+      next: (data) => {
+        this.destinationSelectionnee = data.donnees?.destination;
+        this.preRemplirFormulaire();
+      },
+      error: (err) => {
+        console.error('Erreur chargement détails destination:', err);
+      }
     });
   }
 
-  searchFlights(form: NgForm): void {
-    if (form.invalid || this.flightSearch.passengers === 0) {
-      form.control.markAllAsTouched();
+  loadDestinations() {
+    this.chargement = true;
+    this.http.get<any>('http://localhost:3000/api/destinations').subscribe({
+      next: (data) => {
+        console.log('Destinations chargées:', data);
+        this.destinations = data.donnees?.destinations || data.destinations || [];
+        this.chargement = false;
+      },
+      error: (err) => {
+        console.error('Erreur chargement destinations:', err);
+        this.destinations = this.getMockDestinations();
+        this.chargement = false;
+      }
+    });
+  }
+
+  private getMockDestinations(): Destination[] {
+    return [
+      { _id: '1', nom: 'Paris', code: 'PAR', prix: '250000', dureeVol: '6h', image: '' },
+      { _id: '2', nom: 'Dubai', code: 'DXB', prix: '350000', dureeVol: '5h', image: '' },
+      { _id: '3', nom: 'Istanbul', code: 'IST', prix: '300000', dureeVol: '4h', image: '' },
+      { _id: '4', nom: 'Johannesburg', code: 'JNB', prix: '400000', dureeVol: '8h', image: '' },
+      { _id: '5', nom: 'Casablanca', code: 'CAS', prix: '280000', dureeVol: '5h', image: '' }
+    ];
+  }
+
+  // NOUVELLE MÉTHODE: Obtenir le nom complet de l'aéroport de départ
+  getDepartureName(code: string): string {
+    const aeroport = this.aeroportsDepart.find(a => a.code === code);
+    return aeroport ? `${aeroport.code} - ${aeroport.ville}` : code;
+  }
+
+  getDestinationName(code: string): string {
+    const dest = this.destinations.find(d => d.code === code);
+    return dest ? `${dest.nom} (${dest.code})` : code;
+  }
+
+  formatDate(date: string): string {
+    return new Date(date).toLocaleDateString('fr-FR');
+  }
+
+  searchFlights(form: NgForm) {
+    if (form.invalid) {
+      alert('Veuillez remplir tous les champs obligatoires');
       return;
     }
 
-    this.saveRecentSearch();
-    this.currentStep = 2;
+    // Vérifier que le départ et la destination sont différents
+    if (this.flightSearch.departure === this.flightSearch.destination) {
+      alert('Le point de départ et la destination doivent être différents');
+      return;
+    }
 
-    // Sauvegarder les critères de recherche pour la page choix-vol
-    try {
-      localStorage.setItem('flightSearch', JSON.stringify(this.flightSearch));
-    } catch {}
-
-    // Simuler la recherche de vols
-    this.availableFlights = [
-      {
-        id: 1,
-        airline: 'Air France',
-        flightNumber: 'AF123',
-        departure: 'NDJ',
-        destination: this.flightSearch.destination,
-        departureTime: '08:00',
-        arrivalTime: '14:30',
-        duration: '6h30',
-        price: 450,
-        seatsAvailable: 12
-      },
-      {
-        id: 2,
-        airline: 'Turkish Airlines',
-        flightNumber: 'TK456',
-        departure: 'NDJ',
-        destination: this.flightSearch.destination,
-        departureTime: '12:00',
-        arrivalTime: '17:45',
-        duration: '5h45',
-        price: 380,
-        seatsAvailable: 8
+    // Si pas de destination sélectionnée via le bouton "Réserver", trouver l'ID
+    if (!this.flightSearch.destinationId) {
+      const dest = this.destinations.find(d => d.code === this.flightSearch.destination);
+      if (dest) {
+        this.flightSearch.destinationId = dest._id;
+        this.destinationSelectionnee = dest;
       }
-    ];
+    }
 
-    // Naviguer vers la page de choix des vols
-    this.router.navigate(['/choix-vol']);
+    this.calculerPrix();
+    this.ajouterPassagers();
+    this.currentStep = 3;
   }
 
-  updateDestinationCode(): void {
-    const selectedDest = this.destinations.find(d =>
-      d.name === this.flightSearch.destination
+  onDepartureChange() {
+    console.log('Aéroport de départ sélectionné:', this.flightSearch.departure);
+    // Réinitialiser la destination si nécessaire
+    if (this.flightSearch.departure === this.flightSearch.destination) {
+      this.flightSearch.destination = '';
+      this.flightSearch.destinationId = '';
+      this.destinationSelectionnee = null;
+    }
+  }
+
+  onDestinationChange() {
+    const dest = this.destinations.find(d => d.code === this.flightSearch.destination);
+    if (dest) {
+      this.flightSearch.destinationId = dest._id;
+      this.destinationSelectionnee = dest;
+      this.calculerPrix();
+    }
+  }
+
+  onClassChange() {
+    this.calculerPrix();
+  }
+
+  onPassengersChange() {
+    this.ajouterPassagers();
+    this.calculerPrix();
+  }
+
+  ajouterPassagers() {
+    this.passagers = Array.from({ length: this.flightSearch.passengers }, () => ({
+      prenom: '',
+      nom: '',
+      dateNaissance: '',
+      numeroPasseport: ''
+    }));
+  }
+
+  validerPassagers() {
+    const passagerIncomplet = this.passagers.some(p => 
+      !p.prenom.trim() || !p.nom.trim() || !p.dateNaissance || !p.numeroPasseport.trim()
     );
-    if (selectedDest) {
-      console.log('Code destination:', selectedDest.code);
+
+    if (passagerIncomplet) {
+      alert('Veuillez remplir tous les champs pour chaque passager');
+      return;
     }
+
+    const today = new Date();
+    const dateNaissanceInvalide = this.passagers.some(p => {
+      const birthDate = new Date(p.dateNaissance);
+      return birthDate >= today;
+    });
+
+    if (dateNaissanceInvalide) {
+      alert('La date de naissance doit être dans le passé');
+      return;
+    }
+
+    this.currentStep = 4;
   }
 
-  nextStep(): void {
-    if (this.currentStep < 5) {
-      this.currentStep++;
+  creerReservation() {
+    if (!this.flightSearch.destinationId) {
+      alert('Erreur: Aucune destination sélectionnée');
+      return;
     }
+
+    const reservationData = {
+      depart: this.flightSearch.departure, // AJOUT: Aéroport de départ
+      destinationId: this.flightSearch.destinationId,
+      vol: {
+        depart: this.flightSearch.departure,
+        destination: this.flightSearch.destination,
+        dateDepart: this.flightSearch.departureDate,
+        dateRetour: this.flightSearch.returnDate,
+        classe: this.flightSearch.travelClass
+      },
+      passagers: this.passagers,
+      prixTotal: this.prixTotal,
+      destinationDetails: this.destinationSelectionnee
+    };
+
+    console.log('📦 Données réservation envoyées:', reservationData);
+    
+    // Envoi vers l'API
+    this.http.post('http://localhost:3000/api/reservations', reservationData).subscribe({
+      next: (res: any) => {
+        const reference = res.donnees?.reservation?.referenceReservation || 'REF-' + Date.now().toString().slice(-8);
+        alert(`✅ Réservation créée avec succès !\n📋 Numéro de référence : ${reference}\n💰 Prix total : ${this.prixTotal.toLocaleString()} FCFA`);
+        this.currentStep = 5;
+      },
+      error: err => {
+        console.error('❌ Erreur réservation:', err);
+        alert('❌ Erreur lors de la réservation : ' + (err.error?.message || 'Erreur serveur'));
+        
+        // Simulation en cas d'erreur
+        const reference = 'REF-' + Date.now().toString().slice(-8);
+        alert(`✅ Réservation simulée !\n📋 Référence : ${reference}\n💰 Prix : ${this.prixTotal.toLocaleString()} FCFA`);
+        this.currentStep = 5;
+      }
+    });
   }
 
-  previousStep(): void {
+  precedent() {
     if (this.currentStep > 1) {
       this.currentStep--;
-    }
-  }
-
-  selectFlight(flight: any): void {
-    this.selectedFlight = flight;
-    console.log('Vol sélectionné:', flight);
-
-    // Rediriger automatiquement vers la page choix-vol après sélection du vol
-    setTimeout(() => {
-      this.router.navigate(['/choix-vol']);
-    }, 500); // Petit délai pour laisser voir la sélection
-  }
-
-  isRecommended(flight: any): boolean {
-    return flight && flight.price < 400;
-  }
-
-  getAirlineLogo(airline: string): string {
-    const logos: {[key: string]: string} = {
-      'Air France': 'air-france.png',
-      'Turkish Airlines': 'turkish-airlines.png',
-      'Emirates': 'emirates.png',
-      'Ethiopian Airlines': 'ethiopian-airlines.png'
-    };
-    return logos[airline] || 'default-logo.png';
-  }
-
-  viewFlightDetails(flight: any): void {
-    console.log('Détails du vol:', flight);
-  }
-
-  private saveRecentSearch(): void {
-    const newSearch: RecentSearch = {
-      destination: this.flightSearch.destination,
-      departureDate: this.flightSearch.departureDate,
-      returnDate: this.flightSearch.returnDate,
-      passengers: this.flightSearch.passengers,
-      travelClass: this.flightSearch.travelClass
-    };
-
-    const existingIndex = this.recentSearches.findIndex(search =>
-      search.destination === newSearch.destination &&
-      search.departureDate === newSearch.departureDate
-    );
-
-    if (existingIndex > -1) {
-      this.recentSearches.splice(existingIndex, 1);
-    }
-
-    this.recentSearches.unshift(newSearch);
-
-    if (this.recentSearches.length > 5) {
-      this.recentSearches.pop();
     }
   }
 }

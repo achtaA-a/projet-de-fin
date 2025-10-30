@@ -134,46 +134,27 @@
 <!-- Destinations Section -->
 <section class="destinations-section py-5" id="destinations">
     <div class="container">
-        <div class="row text-center mb-5">
-            <div class="col-12">
-                <h2 class="section-title">Nos destinations populaires</h2>
-                <p class="section-subtitle">Découvrez les villes les plus demandées au départ de N'Djamena</p>
-            </div>
+      <div class="row text-center mb-5">
+        <div class="col-12">
+          <h2 class="section-title">Nos destinations</h2>
+          <p class="section-subtitle">
+            Découvrez toutes les destinations disponibles au départ de N'Djamena
+          </p>
         </div>
-        <div class="row g-4">
-            @for (destination of destinations; track destination.id) {
-            <div class="col-lg-3 col-md-6">
-                <div class="destination-card">
-                    <div class="destination-image">
-                        <img [src]="destination.image" [alt]="destination.name">
-                        <div class="destination-overlay">
-                            <div class="destination-price">À partir de {{destination.price}}</div>
-                        </div>
-                    </div>
-                    <div class="destination-content">
-                        <h5>{{destination.name}}</h5>
-                        <p><i class="fas fa-plane me-2"></i>Vol direct • {{destination.flightTime}}</p>
-                        <div class="destination-features">
-                            <span class="feature-tag">{{destination.flightsPerWeek}}</span>
-                            <span class="feature-tag">{{destination.aircraft}}</span>
-                        </div>
-                        <button class="btn btn-primary mt-3 w-100" (click)="bookDestination(destination)">
-                            <i class="fas fa-ticket-alt me-2"></i>Réserver maintenant
-                        </button>
-                    </div>
-                </div>
-            </div>
-            }
-        </div>
-        <div class="text-center mt-5">
-            <button class="btn btn-outline-primary btn-lg" (click)="showDestinations()">
-                <i class="fas fa-globe-africa me-2"></i>
-                Voir toutes les destinations
-            </button>
-        </div>
+      </div>
+  
+      <!-- Composant dynamique (récupère les destinations depuis le backend) -->
+      <app-list-destina></app-list-destina>
+  
+      <div class="text-center mt-5">
+        <button class="btn btn-outline-primary btn-lg" (click)="showDestinations()">
+          <i class="fas fa-globe-africa me-2"></i>
+          Recharger les destinations
+        </button>
+      </div>
     </div>
-</section>
-
+  </section>
+  
 
 <!-- Modals -->
 @if (showLoginModal) {

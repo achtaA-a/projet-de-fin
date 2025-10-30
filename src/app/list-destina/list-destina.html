@@ -1,0 +1,58 @@
+<!-- Debug Info -->
+
+  <div *ngIf="chargement" class="info">
+    <div class="spinner-border spinner-border-sm me-2" role="status"></div>
+    Chargement des destinations...
+  </div>
+  
+  <div class="row g-4" *ngIf="!chargement && destinations.length > 0">
+    <div class="col-lg-3 col-md-6" *ngFor="let dest of destinations">
+      <div class="destination-card">
+        <div class="destination-image">
+            <img [src]="'http://localhost:3000' + dest.image" [alt]="dest.nom" />
+            <div class="destination-overlay">
+            <div class="destination-price">À partir de {{ dest.prix }} FCFA</div>
+          </div>
+        </div>
+        <div class="destination-content">
+          <h5>{{ dest.nom }}</h5>
+          <p><i class="fas fa-plane me-2"></i>Vol direct • {{ dest.dureeVol }}</p>
+          <div class="destination-features">
+            <span class="feature-tag">{{ dest.volsParSemaine }} vols / semaine</span>
+            <span class="feature-tag">{{ dest.avion }}</span>
+          </div>
+          <button class="btn btn-primary mt-3 w-100" (click)="bookDestination(dest)">
+            <i class="fas fa-ticket-alt me-2"></i>Réserver maintenant
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div *ngIf="!chargement && destinations.length === 0 && !erreur" class="info">
+    <i class="fas fa-info-circle me-2"></i>Aucune destination disponible.
+  </div>
+  
+  <!-- Pagination -->
+  <div class="pagination-controls mt-4 text-center" *ngIf="totalPages > 0">
+    <button class="btn btn-outline-primary me-2" 
+            (click)="precedent()" 
+            [disabled]="page === 1 || chargement">
+      <i class="fas fa-chevron-left me-1"></i>Précédent
+    </button>
+    
+    <span class="page-info mx-3">
+      Page {{page}} / {{totalPages}} 
+      <small class="text-muted">({{totalDestinations}} au total)</small>
+    </span>
+    
+    <button class="btn btn-outline-primary ms-2" 
+            (click)="suivant()" 
+            [disabled]="page === totalPages || chargement">
+      Suivant<i class="fas fa-chevron-right ms-1"></i>
+    </button>
+  </div>
+  
+  <div *ngIf="totalPages === 0 && !chargement" class="info">
+    <small class="text-muted">Aucune donnée à paginer</small>
+  </div>
