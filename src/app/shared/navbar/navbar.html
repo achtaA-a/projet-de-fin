@@ -1,156 +1,242 @@
-<nav class="navbar navbar-expand-lg navbar-dark fixed-top" [class.scrolled]="isNavbarScrolled" id="mainNavbar">
+<nav
+  class="navbar navbar-expand-lg navbar-dark fixed-top"
+  [class.scrolled]="isNavbarScrolled"
+  id="mainNavbar"
+>
   <div class="container">
-    <!-- Logo et nom du site -->
-    <a class="navbar-brand" [routerLink]="['/']" [routerLinkActive]="['active']" [routerLinkActiveOptions]="{exact: true}">
+    <!-- Logo -->
+    <a
+      class="navbar-brand"
+      [routerLink]="['/']"
+      [routerLinkActive]="['active']"
+      [routerLinkActiveOptions]="{ exact: true }"
+    >
       <i class="fas fa-plane-departure"></i>
       <span class="ms-2">TCHAD VOYAGE</span>
     </a>
-    
-    <!-- Bouton menu mobile -->
-    <button class="navbar-toggler" type="button" 
-            (click)="isMenuCollapsed = !isMenuCollapsed"
-            [attr.aria-expanded]="!isMenuCollapsed" 
-            aria-label="Toggle navigation">
+
+    <!-- Bouton mobile -->
+    <button
+      class="navbar-toggler"
+      type="button"
+      (click)="isMenuCollapsed = !isMenuCollapsed"
+      [attr.aria-expanded]="!isMenuCollapsed"
+      aria-label="Toggle navigation"
+    >
       <span class="navbar-toggler-icon"></span>
     </button>
-    
-    <!-- Contenu du menu -->
-    <div class="collapse navbar-collapse" [ngbCollapse]="isMenuCollapsed" id="navbarNav">
+
+    <!-- Menu -->
+    <div
+      class="collapse navbar-collapse"
+      [ngbCollapse]="isMenuCollapsed"
+      id="navbarNav"
+    >
       <ul class="navbar-nav ms-auto align-items-lg-center">
-        <!-- Liens de navigation -->
+        <!-- Liens -->
         <li class="nav-item">
-          <a class="nav-link" [routerLink]="['/']" 
-             [routerLinkActive]="['active']" 
-             [routerLinkActiveOptions]="{exact: true}"
-             (click)="isMenuCollapsed = true">
-            <i class="fas fa-home d-lg-none me-2"></i>
-            Accueil
+          <a
+            class="nav-link"
+            [routerLink]="['/']"
+            [routerLinkActive]="['active']"
+            [routerLinkActiveOptions]="{ exact: true }"
+            (click)="isMenuCollapsed = true"
+          >
+            <i class="fas fa-home d-lg-none me-2"></i> Accueil
           </a>
         </li>
-        
+
         <li class="nav-item">
-          <a class="nav-link" [routerLink]="['/reservation']" 
-             [routerLinkActive]="['active']"
-             (click)="isMenuCollapsed = true">
-            <i class="fas fa-ticket-alt d-lg-none me-2"></i>
-            Réserver un vol
+          <a
+            class="nav-link"
+            [routerLink]="['/reservation']"
+            [routerLinkActive]="['active']"
+            (click)="isMenuCollapsed = true"
+          >
+            <i class="fas fa-ticket-alt d-lg-none me-2"></i> Réserver un vol
           </a>
         </li>
-        
+
         <li class="nav-item">
-          <a class="nav-link" href="#destinations" 
-             (click)="scrollTo('destinations'); isMenuCollapsed = true; $event.preventDefault()">
-            <i class="fas fa-map-marked-alt d-lg-none me-2"></i>
-            Destinations
+          <a
+            class="nav-link"
+            href="#destinations"
+            (click)="scrollTo('destinations'); isMenuCollapsed = true; $event.preventDefault()"
+          >
+            <i class="fas fa-map-marked-alt d-lg-none me-2"></i> Destinations
           </a>
         </li>
-        
+
         <li class="nav-item">
-          <a class="nav-link" [routerLink]="['/admin']" 
-             [routerLinkActive]="['active']"
-             (click)="isMenuCollapsed = true">
-            <i class="fas fa-cog d-lg-none me-2"></i>
-            Administration
+          <a
+            class="nav-link"
+            [routerLink]="['/admin']"
+            [routerLinkActive]="['active']"
+            (click)="isMenuCollapsed = true"
+          >
+            <i class="fas fa-cog d-lg-none me-2"></i> Administration
           </a>
         </li>
-        
+
         <li class="nav-item">
-          <a class="nav-link" href="#promotions" 
-             (click)="scrollTo('promotions'); isMenuCollapsed = true; $event.preventDefault()">
-            <i class="fas fa-percentage d-lg-none me-2"></i>
-            Promotions
+          <a
+            class="nav-link"
+            href="#promotions"
+            (click)="scrollTo('promotions'); isMenuCollapsed = true; $event.preventDefault()"
+          >
+            <i class="fas fa-percentage d-lg-none me-2"></i> Promotions
           </a>
         </li>
-        
+
         <li class="nav-item">
-          <a class="nav-link" href="#" 
-             (click)="openContactModal(); isMenuCollapsed = true; $event.preventDefault()">
-            <i class="fas fa-envelope d-lg-none me-2"></i>
-            Contact
+          <a
+            class="nav-link"
+            href="#"
+            (click)="openContactModal(); isMenuCollapsed = true; $event.preventDefault()"
+          >
+            <i class="fas fa-envelope d-lg-none me-2"></i> Contact
           </a>
         </li>
-        
-        <!-- Séparateur pour mobile -->
-        <li class="d-lg-none"><hr class="dropdown-divider my-2"></li>
-        
-        <!-- Sélecteur de langue -->
+
+        <!-- Langue -->
         <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle language-selector" href="#" id="languageDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+          <a
+            class="nav-link dropdown-toggle language-selector"
+            href="#"
+            id="languageDropdown"
+            role="button"
+            data-bs-toggle="dropdown"
+            aria-expanded="false"
+          >
             <i class="fas fa-globe me-2"></i>
             <span class="active-lang">{{ currentLanguageName }}</span>
           </a>
-          <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="languageDropdown">
+          <ul
+            class="dropdown-menu dropdown-menu-end"
+            aria-labelledby="languageDropdown"
+          >
             <li>
-              <a class="dropdown-item" href="#" (click)="changeLanguage('FR'); $event.preventDefault()" [class.active]="currentLanguage === 'FR'">
-                <span class="flag-icon">🇫🇷</span> Français
-                <i class="fas fa-check ms-auto" *ngIf="currentLanguage === 'FR'"></i>
+              <a
+                class="dropdown-item"
+                href="#"
+                (click)="changeLanguage('FR'); $event.preventDefault()"
+                [class.active]="currentLanguage === 'FR'"
+              >
+                🇫🇷 Français
+                <i
+                  class="fas fa-check ms-auto"
+                  *ngIf="currentLanguage === 'FR'"
+                ></i>
               </a>
             </li>
             <li>
-              <a class="dropdown-item" href="#" (click)="changeLanguage('AR'); $event.preventDefault()" [class.active]="currentLanguage === 'AR'">
-                <span class="flag-icon">🇸🇦</span> العربية
-                <i class="fas fa-check ms-auto" *ngIf="currentLanguage === 'AR'"></i>
+              <a
+                class="dropdown-item"
+                href="#"
+                (click)="changeLanguage('AR'); $event.preventDefault()"
+                [class.active]="currentLanguage === 'AR'"
+              >
+                🇸🇦 العربية
+                <i
+                  class="fas fa-check ms-auto"
+                  *ngIf="currentLanguage === 'AR'"
+                ></i>
               </a>
             </li>
             <li>
-              <a class="dropdown-item" href="#" (click)="changeLanguage('EN'); $event.preventDefault()" [class.active]="currentLanguage === 'EN'">
-                <span class="flag-icon">🇬🇧</span> English
-                <i class="fas fa-check ms-auto" *ngIf="currentLanguage === 'EN'"></i>
+              <a
+                class="dropdown-item"
+                href="#"
+                (click)="changeLanguage('EN'); $event.preventDefault()"
+                [class.active]="currentLanguage === 'EN'"
+              >
+                🇬🇧 English
+                <i
+                  class="fas fa-check ms-auto"
+                  *ngIf="currentLanguage === 'EN'"
+                ></i>
               </a>
             </li>
           </ul>
         </li>
-        
-        <!-- Bouton de changement de thème -->
+
+        <!-- Thème -->
         <li class="nav-item ms-lg-2 mt-2 mt-lg-0">
-          <button class="btn btn-outline-light btn-sm" 
-                  (click)="toggleTheme()"
-                  [title]="isDarkTheme ? 'Passer en mode clair' : 'Passer en mode sombre'">
-            <i class="fas" [class.fa-moon]="!isDarkTheme" [class.fa-sun]="isDarkTheme"></i>
-            <span class="d-lg-none ms-2">{{ isDarkTheme ? 'Mode clair' : 'Mode sombre' }}</span>
+          <button
+            class="btn btn-outline-light btn-sm"
+            (click)="toggleTheme()"
+            [title]="isDarkTheme ? 'Passer en mode clair' : 'Passer en mode sombre'"
+          >
+            <i
+              class="fas"
+              [class.fa-moon]="!isDarkTheme"
+              [class.fa-sun]="isDarkTheme"
+            ></i>
+            <span class="d-lg-none ms-2">{{
+              isDarkTheme ? 'Mode clair' : 'Mode sombre'
+            }}</span>
           </button>
         </li>
-        
-        <!-- Bouton de connexion -->
+
+        <!-- Connexion -->
         <li class="nav-item ms-lg-2 mt-2 mt-lg-0">
-          <button class="btn btn-warning btn-sm" 
-                  (click)="openLoginModal()"
-                  (keyup.enter)="openLoginModal()">
-            <i class="fas fa-sign-in-alt me-1"></i>
-            <span>Connexion</span>
+          <button
+            class="btn btn-warning btn-sm"
+            (click)="openLoginModal()"
+            (keyup.enter)="openLoginModal()"
+          >
+            <i class="fas fa-sign-in-alt me-1"></i> Connexion
           </button>
         </li>
       </ul>
     </div>
   </div>
-  
-  <!-- Contact Modal -->
+
+  <!-- ===================== MODALE CONTACT ===================== -->
   <div *ngIf="showContactModal" class="modal-overlay" (click)="closeContactModal()">
     <div class="modal-container" (click)="$event.stopPropagation()">
       <div class="modal-header">
         <h2>Contactez-nous</h2>
         <button type="button" class="close-btn" (click)="closeContactModal()" aria-label="Fermer">&times;</button>
       </div>
+
       <div class="modal-body">
-        <form (ngSubmit)="onSubmitContactForm()" #contactForm="ngForm">
+        <!-- ✅ Messages de feedback -->
+        <div *ngIf="successMessage" class="alert alert-success text-center">
+          {{ successMessage }}
+        </div>
+        <div *ngIf="errorMessage" class="alert alert-danger text-center">
+          {{ errorMessage }}
+        </div>
+
+        <form #contactForm="ngForm" (ngSubmit)="onSubmitContactForm(contactForm)">
           <div class="form-group">
             <label for="name">Nom complet</label>
-            <input type="text" id="name" name="name" class="form-control" [(ngModel)]="contactFormData.name" required>
+            <input type="text" id="name" name="name" class="form-control"
+              [(ngModel)]="contactFormData.name" required />
           </div>
+
           <div class="form-group">
             <label for="email">Email</label>
-            <input type="email" id="email" name="email" class="form-control" [(ngModel)]="contactFormData.email" required>
+            <input type="email" id="email" name="email" class="form-control"
+              [(ngModel)]="contactFormData.email" required />
           </div>
+
           <div class="form-group">
             <label for="subject">Sujet</label>
-            <input type="text" id="subject" name="subject" class="form-control" [(ngModel)]="contactFormData.subject" required>
+            <input type="text" id="subject" name="subject" class="form-control"
+              [(ngModel)]="contactFormData.subject" required />
           </div>
+
           <div class="form-group">
             <label for="message">Message</label>
-            <textarea id="message" name="message" rows="4" class="form-control" [(ngModel)]="contactFormData.message" required></textarea>
+            <textarea id="message" name="message" rows="4" class="form-control"
+              [(ngModel)]="contactFormData.message" required></textarea>
           </div>
-          <div class="form-actions">
-            <button type="submit" class="btn btn-primary" [disabled]="!contactForm.form.valid || isSubmitting">
+
+          <div class="form-actions text-center mt-3">
+            <button type="submit" class="btn btn-primary"
+              [disabled]="!contactForm.form.valid || isSubmitting">
               <span *ngIf="!isSubmitting">Envoyer</span>
               <span *ngIf="isSubmitting" class="spinner">Envoi en cours...</span>
             </button>
@@ -159,29 +245,36 @@
       </div>
     </div>
   </div>
-  
-  <!-- Login Modal -->
+
+  <!-- ===================== MODALE CONNEXION ===================== -->
   <div *ngIf="showLoginModal" class="modal-overlay" (click)="closeLoginModal()">
     <div class="modal-container" (click)="$event.stopPropagation()">
       <div class="modal-header">
         <h2>Connexion</h2>
         <button type="button" class="close-btn" (click)="closeLoginModal()" aria-label="Fermer">&times;</button>
       </div>
+
       <div class="modal-body">
-        <form (ngSubmit)="onSubmitLoginForm()" #loginForm="ngForm">
+        <form #loginForm="ngForm" (ngSubmit)="onSubmitLoginForm(loginForm)">
           <div class="form-group">
             <label for="loginEmail">Email</label>
-            <input type="email" id="loginEmail" name="email" class="form-control" [(ngModel)]="loginFormData.email" required>
+            <input type="email" id="loginEmail" name="email" class="form-control"
+              [(ngModel)]="loginFormData.email" required />
           </div>
+
           <div class="form-group">
             <label for="loginPassword">Mot de passe</label>
-            <input type="password" id="loginPassword" name="password" class="form-control" [(ngModel)]="loginFormData.password" required>
+            <input type="password" id="loginPassword" name="password" class="form-control"
+              [(ngModel)]="loginFormData.password" required />
           </div>
+
           <div class="form-actions">
-            <button type="submit" class="btn btn-primary" [disabled]="!loginForm.form.valid || isSubmitting">
+            <button type="submit" class="btn btn-primary"
+              [disabled]="!loginForm.form.valid || isSubmitting">
               <span *ngIf="!isSubmitting">Se connecter</span>
               <span *ngIf="isSubmitting" class="spinner">Connexion en cours...</span>
             </button>
+
             <button type="button" class="btn btn-link" (click)="openForgotPasswordModal()">
               Mot de passe oublié ?
             </button>
@@ -190,26 +283,32 @@
       </div>
     </div>
   </div>
-  
-  <!-- Forgot Password Modal -->
+
+  <!-- ===================== MODALE MOT DE PASSE OUBLIÉ ===================== -->
   <div *ngIf="showForgotPasswordModal" class="modal-overlay" (click)="closeForgotPasswordModal()">
     <div class="modal-container" (click)="$event.stopPropagation()">
       <div class="modal-header">
         <h2>Mot de passe oublié</h2>
         <button type="button" class="close-btn" (click)="closeForgotPasswordModal()" aria-label="Fermer">&times;</button>
       </div>
+
       <div class="modal-body">
-        <form (ngSubmit)="onSubmitForgotPasswordForm()" #forgotPasswordForm="ngForm">
+        <form #forgotPasswordForm="ngForm" (ngSubmit)="onSubmitForgotPasswordForm(forgotPasswordForm)">
           <div class="form-group">
             <label for="forgotEmail">Email</label>
-            <input type="email" id="forgotEmail" name="email" class="form-control" [(ngModel)]="forgotPasswordFormData.email" required>
+            <input type="email" id="forgotEmail" name="email" class="form-control"
+              [(ngModel)]="forgotPasswordFormData.email" required />
           </div>
+
           <div class="form-actions">
-            <button type="submit" class="btn btn-primary" [disabled]="!forgotPasswordForm.form.valid || isSubmitting">
+            <button type="submit" class="btn btn-primary"
+              [disabled]="!forgotPasswordForm.form.valid || isSubmitting">
               <span *ngIf="!isSubmitting">Envoyer le lien</span>
               <span *ngIf="isSubmitting" class="spinner">Envoi en cours...</span>
             </button>
-            <button type="button" class="btn btn-link" (click)="closeForgotPasswordModal(); openLoginModal()">
+
+            <button type="button" class="btn btn-link"
+              (click)="closeForgotPasswordModal(); openLoginModal()">
               Retour à la connexion
             </button>
           </div>
@@ -218,6 +317,3 @@
     </div>
   </div>
 </nav>
-
-<!-- Espace pour compenser la hauteur de la navbar fixe -->
-<div class="navbar-spacer"></div>

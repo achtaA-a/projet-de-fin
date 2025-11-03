@@ -1,5 +1,5 @@
 import { Component, OnInit, HostListener } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
+import { Router} from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -20,7 +20,7 @@ interface Destination {
   selector: 'app-dashboard',
   templateUrl: './dashboard.html',
   styleUrls: ['./dashboard.css'],
-  imports: [CommonModule, FormsModule, TranslateModule,RouterLink,ListDestina]
+  imports: [CommonModule, FormsModule, TranslateModule,ListDestina]
 })
 export class DashboardComponent implements OnInit {
   // Données des destinations

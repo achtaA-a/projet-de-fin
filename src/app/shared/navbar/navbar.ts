@@ -1,230 +1,211 @@
-import { Component, HostListener, OnInit, OnDestroy } from '@angular/core';
+import { Component, HostListener, OnInit, OnDestroy, Injectable } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, RouterLinkActive, Router, NavigationEnd } from '@angular/router';
 import { NgbCollapse, NgbModule } from '@ng-bootstrap/ng-bootstrap';
-import { FormsModule } from '@angular/forms';
-import { Subscription } from 'rxjs';
+import { FormsModule, NgForm } from '@angular/forms';
+import { Subscription, Observable } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 
+// ------------------- Interface -------------------
+export interface ContactFormData {
+  name: string;
+  email: string;
+  subject: string;
+  message: string;
+}
+
+// ------------------- Service -------------------
+@Injectable({ providedIn: 'root' })
+export class ContactService {
+  private apiUrl = 'http://localhost:3000/api/contact'; // ✅ URL du backend
+
+  constructor(private http: HttpClient) {}
+
+  sendContactForm(data: ContactFormData): Observable<any> {
+    return this.http.post(this.apiUrl, data);
+  }
+}
+
+// ------------------- Composant -------------------
 @Component({
   selector: 'app-navbar',
   standalone: true,
   imports: [
-    CommonModule, 
-    RouterLink, 
-    RouterLinkActive, 
-    NgbCollapse, 
-    NgbModule, 
-    FormsModule
+    CommonModule,
+    RouterLink,
+    RouterLinkActive,
+    NgbCollapse,
+    NgbModule,
+    FormsModule,
   ],
   templateUrl: './navbar.html',
   styleUrls: ['./navbar.css']
 })
 export class NavbarComponent implements OnInit, OnDestroy {
+  // État global
   isMenuCollapsed = true;
   isNavbarScrolled = false;
+  isDarkTheme = false;
+  isSubmitting = false;
+  currentRoute = '';
+
+  // Langue
   currentLanguage = 'FR';
   currentLanguageName = 'Français';
-  isDarkTheme = false;
+
+  // Modales
   showLoginModal = false;
   showForgotPasswordModal = false;
-  currentRoute = '';
   showContactModal = false;
-  isSubmitting = false;
-  contactFormData = {
-    name: '',
-    email: '',
-    subject: '',
-    message: ''
-  };
-  loginFormData = {
-    email: '',
-    password: ''
-  };
-  forgotPasswordFormData = {
-    email: ''
-  };
-  private routerSubscription: Subscription | undefined;
+
+  // Messages
+  successMessage: string | null = null;
+  errorMessage: string | null = null;
+
+  // Données des formulaires
+  contactFormData: ContactFormData = { name: '', email: '', subject: '', message: '' };
+  loginFormData = { email: '', password: '' };
+  forgotPasswordFormData = { email: '' };
+
+  private routerSubscription?: Subscription;
 
   constructor(
     private router: Router,
-    private http: HttpClient
+    private contactService: ContactService
   ) {}
 
+  // ------------------- Cycle de vie -------------------
   ngOnInit(): void {
-    console.log('NavbarComponent initialisé');
-    // Vérifier le thème au chargement
     this.checkTheme();
-    
-    // Vérifier la langue au chargement
     this.checkLanguagePreference();
-    
-    // Suivre les changements de route
+
+    // Fermer menu sur navigation
     this.routerSubscription = this.router.events.subscribe(event => {
-      if (event instanceof NavigationEnd) {
-        this.currentRoute = event.url;
-        this.isMenuCollapsed = true; // Fermer le menu mobile lors du changement de route
-      }
+      if (event instanceof NavigationEnd) this.isMenuCollapsed = true;
     });
-    
-    // Vérifier la position de défilement initiale
-    this.onWindowScroll();
   }
 
   ngOnDestroy(): void {
-    // Nettoyer l'abonnement pour éviter les fuites de mémoire
-    if (this.routerSubscription) {
-      this.routerSubscription.unsubscribe();
-    }
+    this.routerSubscription?.unsubscribe();
   }
 
-  // Gestion du formulaire de contact
+  // ------------------- Contact Modal -------------------
   openContactModal() {
-    console.log('=== Méthode openContactModal appelée ===');
-    console.log('Avant - showContactModal:', this.showContactModal);
-    
-    // Forcer la mise à jour de la vue
     this.showContactModal = true;
-    console.log('Après - showContactModal:', this.showContactModal);
-    
-    // Vérifier si la classe est correctement ajoutée
     document.body.classList.add('modal-open');
-    console.log('Classe ajoutée au body:', document.body.classList);
-    
-    // Forcer la détection des changements
-    setTimeout(() => {
-      console.log('Après setTimeout - showContactModal:', this.showContactModal);
-      console.log('Body classes après timeout:', document.body.className);
-    }, 0);
   }
 
   closeContactModal() {
-    console.log('Fermeture de la modale');
     this.showContactModal = false;
     document.body.classList.remove('modal-open');
-    console.log('showContactModal après fermeture:', this.showContactModal);
+    this.successMessage = null;
+    this.errorMessage = null;
   }
 
-  onSubmitContactForm() {
-    if (!this.isSubmitting) {
-      this.isSubmitting = true;
-      
-      // Ici, vous pouvez ajouter la logique pour envoyer le formulaire
-      // Par exemple, en utilisant un service d'API
-      console.log('Form submitted:', this.contactFormData);
-      
-      // Simulation d'un envoi de formulaire
-      setTimeout(() => {
+  // ✅ Envoi réel du formulaire de contact
+  onSubmitContactForm(form: NgForm) {
+    if (!form.valid || this.isSubmitting) return;
+
+    this.isSubmitting = true;
+    this.successMessage = null;
+    this.errorMessage = null;
+
+    this.contactService.sendContactForm(this.contactFormData).subscribe({
+      next: (res) => {
         this.isSubmitting = false;
-        this.closeContactModal();
-        // Réinitialiser le formulaire
-        this.contactFormData = {
-          name: '',
-          email: '',
-          subject: '',
-          message: ''
-        };
-        // Afficher un message de succès (vous pouvez utiliser un service de notification)
-        alert('Votre message a été envoyé avec succès !');
-      }, 1500);
-    }
+        this.successMessage = res?.message || 'Message envoyé avec succès !';
+        console.log('✅ Réponse backend :', res);
+
+        form.resetForm();
+        this.contactFormData = { name: '', email: '', subject: '', message: '' };
+
+        // Fermer après 2s
+        setTimeout(() => {
+          this.closeContactModal();
+        }, 2000);
+      },
+      error: (err) => {
+        console.error('❌ Erreur envoi message :', err);
+        this.isSubmitting = false;
+        this.errorMessage = err?.error?.error || 'Erreur lors de l’envoi du message.';
+      }
+    });
   }
 
+  // ------------------- Scroll & Navbar -------------------
   @HostListener('window:scroll', [])
   onWindowScroll() {
     this.isNavbarScrolled = window.pageYOffset > 20;
   }
 
-  toggleLanguage() {
-    this.currentLanguage = this.currentLanguage === 'FR' ? 'AR' : 'FR';
-    this.updateLanguageName();
-    this.saveLanguagePreference();
-    console.log('Langue changée vers:', this.currentLanguage);
-  }
-
-  changeLanguage(lang: string): void {
-    this.currentLanguage = lang;
-    this.updateLanguageName();
-    this.saveLanguagePreference();
-    console.log('Langue changée vers:', lang);
-  }
-
-  private updateLanguageName(): void {
-    switch(this.currentLanguage) {
-      case 'FR':
-        this.currentLanguageName = 'Français';
-        break;
-      case 'AR':
-        this.currentLanguageName = 'العربية';
-        break;
-      case 'EN':
-        this.currentLanguageName = 'English';
-        break;
-      default:
-        this.currentLanguageName = 'Français';
+  scrollTo(section: string) {
+    if (this.router.url === '/') {
+      const element = document.getElementById(section);
+      element?.scrollIntoView({ behavior: 'smooth' });
+    } else {
+      this.router.navigate(['/'], { fragment: section });
     }
+    this.isMenuCollapsed = true;
   }
 
-  private saveLanguagePreference(): void {
-    localStorage.setItem('language', this.currentLanguage);
-  }
-
-  private checkLanguagePreference(): void {
-    const savedLanguage = localStorage.getItem('language');
-    if (savedLanguage) {
-      this.currentLanguage = savedLanguage;
-      this.updateLanguageName();
-    }
-  }
-
+  // ------------------- Thème -------------------
   toggleTheme() {
     this.isDarkTheme = !this.isDarkTheme;
-    if (this.isDarkTheme) {
-      document.body.classList.add('dark-theme');
-      localStorage.setItem('theme', 'dark');
-    } else {
-      document.body.classList.remove('dark-theme');
-      localStorage.setItem('theme', 'light');
-    }
-    
-    // Émettre un événement personnalisé pour informer les autres composants du changement de thème
-    document.dispatchEvent(new CustomEvent('themeChanged', { detail: { isDark: this.isDarkTheme } }));
+    document.body.classList.toggle('dark-theme', this.isDarkTheme);
+    localStorage.setItem('theme', this.isDarkTheme ? 'dark' : 'light');
   }
 
   private checkTheme() {
-    const savedTheme = localStorage.getItem('theme');
-    if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+    const saved = localStorage.getItem('theme');
+    if (saved === 'dark' || (!saved && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
       this.isDarkTheme = true;
       document.body.classList.add('dark-theme');
     }
   }
 
-  scrollTo(section: string) {
-    if (this.router.url === '/') {
-      // Si nous sommes sur la page d'accueil, faire défiler vers la section
-      const element = document.getElementById(section);
-      if (element) {
-        element.scrollIntoView({ behavior: 'smooth' });
-      }
-    } else {
-      // Si nous ne sommes pas sur la page d'accueil, naviguer vers la page d'accueil avec un hash
-      this.router.navigate(['/'], { fragment: section });
-    }
-    // Fermer le menu mobile après la navigation
-    this.isMenuCollapsed = true;
+  // ------------------- Langue -------------------
+  toggleLanguage() {
+    this.currentLanguage = this.currentLanguage === 'FR' ? 'AR' : 'FR';
+    this.updateLanguageName();
+    this.saveLanguagePreference();
   }
 
+  changeLanguage(lang: string) {
+    this.currentLanguage = lang;
+    this.updateLanguageName();
+    this.saveLanguagePreference();
+  }
+
+  private updateLanguageName() {
+    switch (this.currentLanguage) {
+      case 'FR': this.currentLanguageName = 'Français'; break;
+      case 'AR': this.currentLanguageName = 'العربية'; break;
+      case 'EN': this.currentLanguageName = 'English'; break;
+      default: this.currentLanguageName = 'Français';
+    }
+  }
+
+  private saveLanguagePreference() {
+    localStorage.setItem('language', this.currentLanguage);
+  }
+
+  private checkLanguagePreference() {
+    const saved = localStorage.getItem('language');
+    if (saved) {
+      this.currentLanguage = saved;
+      this.updateLanguageName();
+    }
+  }
+
+  // ------------------- Login & Password -------------------
   openLoginModal() {
     this.showLoginModal = true;
-    this.showForgotPasswordModal = false;
     document.body.classList.add('modal-open');
-    document.body.style.overflow = 'hidden';
   }
 
   closeLoginModal() {
     this.showLoginModal = false;
     document.body.classList.remove('modal-open');
-    document.body.style.overflow = '';
   }
 
   openForgotPasswordModal() {
@@ -236,48 +217,16 @@ export class NavbarComponent implements OnInit, OnDestroy {
     this.showForgotPasswordModal = false;
   }
 
-  onSubmitLoginForm() {
-    if (!this.isSubmitting) {
-      this.isSubmitting = true;
-      
-      console.log('Tentative de connexion:', this.loginFormData);
-      
-      // Simulation d'une connexion
-      setTimeout(() => {
-        this.isSubmitting = false;
-        this.closeLoginModal();
-        
-        // Réinitialiser le formulaire
-        this.loginFormData = {
-          email: '',
-          password: ''
-        };
-        
-        // Afficher un message de succès
-        alert('Connexion réussie !');
-      }, 1500);
-    }
+  // Si tu veux connecter ton backend, tu pourras implémenter ici :
+  onSubmitLoginForm(form: NgForm) {
+    if (!form.valid) return;
+    console.log('Tentative de connexion :', this.loginFormData);
+    // TODO : Appel API login
   }
 
-  onSubmitForgotPasswordForm() {
-    if (!this.isSubmitting) {
-      this.isSubmitting = true;
-      
-      console.log('Récupération de mot de passe:', this.forgotPasswordFormData);
-      
-      // Simulation d'envoi de lien de récupération
-      setTimeout(() => {
-        this.isSubmitting = false;
-        this.closeForgotPasswordModal();
-        
-        // Réinitialiser le formulaire
-        this.forgotPasswordFormData = {
-          email: ''
-        };
-        
-        // Afficher un message de succès
-        alert('Lien de récupération envoyé à votre adresse email !');
-      }, 1500);
-    }
+  onSubmitForgotPasswordForm(form: NgForm) {
+    if (!form.valid) return;
+    console.log('Demande de réinitialisation pour :', this.forgotPasswordFormData.email);
+    // TODO : Appel API mot de passe oublié
   }
 }
