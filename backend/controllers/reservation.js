@@ -152,42 +152,54 @@ exports.creerReservation = async (req, res) => {
   }
 };
 
-// Récupérer toutes les réservations
+// 🚀 Récupérer toutes les réservations (optimisé)
 exports.obtenirReservations = async (req, res) => {
   try {
-    const { page = 1, limit = 10, sort = '-createdAt' } = req.query;
-    
-    const pageNum = parseInt(page);
-    const limitNum = parseInt(limit);
+    const { page = 1, limit = 10, sort = '-createdAt', lean = true } = req.query;
+
+    const pageNum = parseInt(page, 10);
+    const limitNum = parseInt(limit, 10);
+
+    if (isNaN(pageNum) || isNaN(limitNum) || pageNum < 1 || limitNum < 1) {
+      return res.status(400).json({
+        statut: 'erreur',
+        message: 'Les paramètres "page" et "limit" doivent être des nombres positifs.'
+      });
+    }
+
     const skip = (pageNum - 1) * limitNum;
 
-    const reservations = await Reservation.find()
-      .populate('destinationId')
-      .sort(sort)
-      .limit(limitNum)
-      .skip(skip);
+    // ⚡ Utilisation de .lean() pour rendre les résultats beaucoup plus légers et rapides à renvoyer
+    // ⚡ Promise.all pour exécuter les requêtes en parallèle
+    const [reservations, total] = await Promise.all([
+      Reservation.find({}, '-__v') // on exclut le champ __v inutile
+        .populate('destinationId', 'nom pays code') // on ne charge que les champs nécessaires
+        .sort(sort)
+        .skip(skip)
+        .limit(limitNum)
+        .lean(), // ➜ supprime la surcharge Mongoose, renvoie des objets JS purs
+      Reservation.estimatedDocumentCount() // ➜ plus rapide que countDocuments()
+    ]);
 
-    const total = await Reservation.countDocuments();
-
+    // ⚡ Réponse immédiate
     res.status(200).json({
       statut: 'succes',
       resultats: reservations.length,
       total,
       page: pageNum,
       pages: Math.ceil(total / limitNum),
-      donnees: {
-        reservations
-      }
+      donnees: { reservations }
     });
+
   } catch (erreur) {
-    console.error('❌ Erreur récupération réservations:', erreur);
+    console.error('❌ Erreur récupération réservations :', erreur.message);
     res.status(500).json({
       statut: 'erreur',
-      message: 'Erreur lors de la récupération des réservations'
+      message: 'Erreur interne du serveur lors de la récupération des réservations',
+      details: erreur.message
     });
   }
 };
-
 // Récupérer une réservation spécifique
 exports.obtenirReservation = async (req, res) => {
   try {

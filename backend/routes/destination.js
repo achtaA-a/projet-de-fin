@@ -8,3 +8,4 @@ router.get("/", destinationController.obtenirToutesDestinations);
 router.get("/:id", destinationController.obtenirDestination);
 
 module.exports = router;
+   

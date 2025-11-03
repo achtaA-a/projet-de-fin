@@ -6,10 +6,9 @@ POST http://localhost:3000/api/auth/inscription
 Content-Type: application/json
 
 {
-  "prenom": "Test",
-  "nom": "User",
-  "email": "test@example.com",
-  "motDePasse": "password123",
-  "telephone": "+235 00 00 00 00",
-  "dateNaissance": "1990-01-01"
+  "user": "Achta",
+  "destinationId": "650f3b2e1f1a2b00123abc45",
+  "date": "2025-11-01T00:00:00.000Z",
+  "nombrePersonnes": 2,
+  "estActif": true
 }

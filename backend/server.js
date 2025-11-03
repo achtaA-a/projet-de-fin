@@ -11,9 +11,12 @@ const hpp = require('hpp');
 const cookieParser = require('cookie-parser');
 
 // Import des routes
+const { sendContactMessage } = require('./controllers/contactController');
+
 const routesDestinations = require('./routes/destination');
 const routesAuth = require('./routes/auth');
 const routesReservations = require('./routes/reservation');
+const routesContact = require('./routes/contact');
 const path = require('path');
 
 // Initialisation de l'application Express
@@ -103,6 +106,8 @@ if (process.env.NODE_ENV === 'development') {
 app.use('/api/destinations', routesDestinations);
 app.use('/api/auth', routesAuth);
 app.use('/api/reservations', routesReservations);
+app.use('/api/contact', sendContactMessage);
+
 
 // Route de santé
 app.get('/api/sante', (req, res) => {
@@ -158,3 +163,4 @@ process.on('uncaughtException', (err) => {
   console.error(err.name, err.message);
   process.exit(1);
 });
+   
