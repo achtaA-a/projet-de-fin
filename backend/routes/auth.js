@@ -1,10 +1,14 @@
 const express = require('express');
-const controleurAuth = require('../controllers/auth');
-const routeur = express.Router();
+const router = express.Router();
+const {
+  inscription,
+  connexion,
+  motDePasseOublie,
+} = require('../controllers/auth');
 
-// Routes d'authentification
-routeur.post('/inscription', controleurAuth.inscription);
-routeur.post('/connexion', controleurAuth.connexion);
-routeur.post('/mot-de-passe-oublie', controleurAuth.motDePasseOublie);
+router.post('/inscription', inscription);
+router.post('/connexion', connexion);
+router.post('/motdepasse-oublie', motDePasseOublie);
 
-module.exports = routeur;
+module.exports = router;
+ 

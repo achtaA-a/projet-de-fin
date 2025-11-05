@@ -1,10 +1,37 @@
-import { Component, HostListener, OnInit, OnDestroy, Injectable } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { RouterLink, RouterLinkActive, Router, NavigationEnd } from '@angular/router';
-import { NgbCollapse, NgbModule } from '@ng-bootstrap/ng-bootstrap';
-import { FormsModule, NgForm } from '@angular/forms';
-import { Subscription, Observable } from 'rxjs';
-import { HttpClient } from '@angular/common/http';
+import {
+  Component,
+  HostListener,
+  OnInit,
+  OnDestroy,
+  Injectable
+} from '@angular/core';
+import {
+  CommonModule
+} from '@angular/common';
+import {
+  RouterLink,
+  RouterLinkActive,
+  Router,
+  NavigationEnd
+} from '@angular/router';
+import {
+  NgbCollapse,
+  NgbModule
+} from '@ng-bootstrap/ng-bootstrap';
+import {
+  FormsModule,
+  NgForm
+} from '@angular/forms';
+import {
+  Subscription,
+  Observable
+} from 'rxjs';
+import {
+  HttpClient
+} from '@angular/common/http';
+import {
+  AuthService
+} from '../../services/authService'; // ✅ adapte le chemin si besoin
 
 // ------------------- Interface -------------------
 export interface ContactFormData {
@@ -14,10 +41,12 @@ export interface ContactFormData {
   message: string;
 }
 
-// ------------------- Service -------------------
-@Injectable({ providedIn: 'root' })
+// ------------------- Service de contact -------------------
+@Injectable({
+  providedIn: 'root'
+})
 export class ContactService {
-  private apiUrl = 'http://localhost:3000/api/contact'; // ✅ URL du backend
+  private apiUrl = 'http://localhost:3000/api/contact'; // ✅ URL backend
 
   constructor(private http: HttpClient) {}
 
@@ -26,7 +55,7 @@ export class ContactService {
   }
 }
 
-// ------------------- Composant -------------------
+// ------------------- Composant principal -------------------
 @Component({
   selector: 'app-navbar',
   standalone: true,
@@ -42,36 +71,51 @@ export class ContactService {
   styleUrls: ['./navbar.css']
 })
 export class NavbarComponent implements OnInit, OnDestroy {
-  // État global
+  // ------------------- États globaux -------------------
   isMenuCollapsed = true;
   isNavbarScrolled = false;
   isDarkTheme = false;
   isSubmitting = false;
   currentRoute = '';
 
-  // Langue
+  // ------------------- Langue -------------------
   currentLanguage = 'FR';
   currentLanguageName = 'Français';
 
-  // Modales
+  // ------------------- Modales -------------------
   showLoginModal = false;
   showForgotPasswordModal = false;
   showContactModal = false;
 
-  // Messages
+  // ------------------- Messages -------------------
   successMessage: string | null = null;
   errorMessage: string | null = null;
 
-  // Données des formulaires
-  contactFormData: ContactFormData = { name: '', email: '', subject: '', message: '' };
-  loginFormData = { email: '', password: '' };
-  forgotPasswordFormData = { email: '' };
+  // ------------------- Formulaires -------------------
+  contactFormData: ContactFormData = {
+    name: '',
+    email: '',
+    subject: '',
+    message: ''
+  };
+  loginFormData = {
+    email: '',
+    password: ''
+  };
+  forgotPasswordFormData = {
+    email: ''
+  };
+
+  // ------------------- Auth -------------------
+  isLoggedIn = false;
+  utilisateurConnecte: any = null;
 
   private routerSubscription?: Subscription;
 
   constructor(
     private router: Router,
-    private contactService: ContactService
+    private contactService: ContactService,
+    private authService: AuthService
   ) {}
 
   // ------------------- Cycle de vie -------------------
@@ -79,9 +123,15 @@ export class NavbarComponent implements OnInit, OnDestroy {
     this.checkTheme();
     this.checkLanguagePreference();
 
-    // Fermer menu sur navigation
+    // ✅ Gestion du menu sur navigation
     this.routerSubscription = this.router.events.subscribe(event => {
       if (event instanceof NavigationEnd) this.isMenuCollapsed = true;
+    });
+
+    // ✅ État de connexion
+    this.authService.isLoggedIn$.subscribe((loggedIn) => {
+      this.isLoggedIn = loggedIn;
+      this.utilisateurConnecte = this.authService.getUtilisateurConnecte();
     });
   }
 
@@ -102,7 +152,6 @@ export class NavbarComponent implements OnInit, OnDestroy {
     this.errorMessage = null;
   }
 
-  // ✅ Envoi réel du formulaire de contact
   onSubmitContactForm(form: NgForm) {
     if (!form.valid || this.isSubmitting) return;
 
@@ -114,15 +163,10 @@ export class NavbarComponent implements OnInit, OnDestroy {
       next: (res) => {
         this.isSubmitting = false;
         this.successMessage = res?.message || 'Message envoyé avec succès !';
-        console.log('✅ Réponse backend :', res);
-
         form.resetForm();
         this.contactFormData = { name: '', email: '', subject: '', message: '' };
 
-        // Fermer après 2s
-        setTimeout(() => {
-          this.closeContactModal();
-        }, 2000);
+        setTimeout(() => this.closeContactModal(), 2000);
       },
       error: (err) => {
         console.error('❌ Erreur envoi message :', err);
@@ -164,12 +208,6 @@ export class NavbarComponent implements OnInit, OnDestroy {
   }
 
   // ------------------- Langue -------------------
-  toggleLanguage() {
-    this.currentLanguage = this.currentLanguage === 'FR' ? 'AR' : 'FR';
-    this.updateLanguageName();
-    this.saveLanguagePreference();
-  }
-
   changeLanguage(lang: string) {
     this.currentLanguage = lang;
     this.updateLanguageName();
@@ -197,7 +235,58 @@ export class NavbarComponent implements OnInit, OnDestroy {
     }
   }
 
-  // ------------------- Login & Password -------------------
+  // ------------------- Auth: Connexion -------------------
+  onSubmitLoginForm(form: NgForm) {
+    if (!form.valid) return;
+    this.isSubmitting = true;
+    this.errorMessage = null;
+
+    this.authService.connexion({
+      email: this.loginFormData.email,
+      motDePasse: this.loginFormData.password
+    }).subscribe({
+      next: (res) => {
+        this.isSubmitting = false;
+        this.closeLoginModal();
+        this.loginFormData = { email: '', password: '' };
+        this.utilisateurConnecte = this.authService.getUtilisateurConnecte();
+        this.isLoggedIn = true;
+      },
+      error: (err) => {
+        this.isSubmitting = false;
+        this.errorMessage = err?.error?.message || 'Échec de la connexion.';
+      }
+    });
+  }
+
+  // ------------------- Auth: Déconnexion -------------------
+  logout() {
+    this.authService.deconnexion();
+    this.isLoggedIn = false;
+    this.utilisateurConnecte = null;
+    this.router.navigate(['/']);
+  }
+
+  // ------------------- Auth: Mot de passe oublié -------------------
+  onSubmitForgotPasswordForm(form: NgForm) {
+    if (!form.valid) return;
+    this.isSubmitting = true;
+    this.errorMessage = null;
+
+    this.authService.motDePasseOublie({ email: this.forgotPasswordFormData.email }).subscribe({
+      next: (res) => {
+        this.isSubmitting = false;
+        this.successMessage = res?.message || 'Email de réinitialisation envoyé !';
+        setTimeout(() => this.closeForgotPasswordModal(), 2000);
+      },
+      error: (err) => {
+        this.isSubmitting = false;
+        this.errorMessage = err?.error?.message || 'Erreur lors de l’envoi du lien.';
+      }
+    });
+  }
+
+  // ------------------- Gestion des modales -------------------
   openLoginModal() {
     this.showLoginModal = true;
     document.body.classList.add('modal-open');
@@ -215,18 +304,5 @@ export class NavbarComponent implements OnInit, OnDestroy {
 
   closeForgotPasswordModal() {
     this.showForgotPasswordModal = false;
-  }
-
-  // Si tu veux connecter ton backend, tu pourras implémenter ici :
-  onSubmitLoginForm(form: NgForm) {
-    if (!form.valid) return;
-    console.log('Tentative de connexion :', this.loginFormData);
-    // TODO : Appel API login
-  }
-
-  onSubmitForgotPasswordForm(form: NgForm) {
-    if (!form.valid) return;
-    console.log('Demande de réinitialisation pour :', this.forgotPasswordFormData.email);
-    // TODO : Appel API mot de passe oublié
   }
 }

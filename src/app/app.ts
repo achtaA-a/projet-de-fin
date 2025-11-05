@@ -8,6 +8,6 @@ import { RouterOutlet } from '@angular/router';
   styleUrl: './app.css'
 })
 export class App {
-  title = signal('tchad-voyage');
+  title = signal('projet-de-fin');
 
 }
