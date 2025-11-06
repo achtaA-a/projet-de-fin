@@ -33,16 +33,18 @@ export class ReservationManagement implements OnInit {
     this.loading = true;
     this.reservationService.getReservations(this.apiPage).subscribe({
       next: (res) => {
-        this.reservations = (res.donnees?.reservations || []).map((r: any) => ({
+        this.reservations = (res.donnees?.reservations || res.reservations || []).map((r: any) => ({
           ...r,
-          saving: false // Ajouter l'état de sauvegarde
+          saving: false
         }));
-        this.apiTotalPages = res.pages || 1;
+        this.apiTotalPages = res.pages || res.totalPages || 1;
         this.loading = false;
+        this.showToast('✅ Réservations chargées avec succès', 'success');
       },
       error: (err) => {
         console.error('Erreur de chargement:', err);
         this.loading = false;
+        this.showToast('❌ Erreur lors du chargement des réservations', 'error');
       }
     });
   }
@@ -50,21 +52,33 @@ export class ReservationManagement implements OnInit {
   loadStats() {
     this.reservationService.getStats().subscribe({
       next: (res) => {
-        this.stats = res.donnees;
+        this.stats = res.donnees || res;
         if (this.stats && this.stats.totalReservations > 0) {
           this.stats.moyenneParReservation = this.stats.chiffreAffaire / this.stats.totalReservations;
         }
       },
-      error: (err) => console.error('Erreur stats:', err)
+      error: (err) => {
+        console.error('Erreur stats:', err);
+        this.showToast('❌ Erreur lors du chargement des statistiques', 'error');
+      }
     });
   }
 
   // Mettre à jour le statut d'une réservation
   updateReservationStatus(reservationId: string, newStatus: string) {
     const reservation = this.reservations.find(r => r._id === reservationId);
-    if (!reservation) return;
+    if (!reservation) {
+      this.showToast('❌ Réservation non trouvée', 'error');
+      return;
+    }
 
     const oldStatus = reservation.statut;
+    
+    // Vérifier si le statut a vraiment changé
+    if (oldStatus === newStatus) {
+      return;
+    }
+
     reservation.saving = true;
 
     this.reservationService.updateReservation(reservationId, { statut: newStatus }).subscribe({
@@ -72,21 +86,97 @@ export class ReservationManagement implements OnInit {
         reservation.saving = false;
         reservation.statut = newStatus;
         
-        // Afficher un message de confirmation
         this.showStatusUpdateMessage(reservation.referenceReservation, newStatus);
-        
-        // Recharger les statistiques
-        this.loadStats();
+        this.loadStats(); // Recharger les statistiques
       },
       error: (err) => {
         console.error('Erreur mise à jour statut:', err);
         reservation.saving = false;
         reservation.statut = oldStatus; // Revenir à l'ancien statut
         
-        // Afficher un message d'erreur
-        this.showErrorMessage('Erreur lors de la mise à jour du statut');
+        let errorMessage = 'Erreur lors de la mise à jour du statut';
+        if (err.error?.message) {
+          errorMessage = err.error.message;
+        } else if (err.status === 404) {
+          errorMessage = 'Réservation non trouvée sur le serveur';
+        } else if (err.status === 400) {
+          errorMessage = 'Données de mise à jour invalides';
+        }
+        
+        this.showErrorMessage(errorMessage);
       }
     });
+  }
+
+  // Supprimer une réservation
+  deleteReservation(id: string) {
+    if (!id) {
+      this.showToast('❌ ID de réservation invalide', 'error');
+      return;
+    }
+
+    if (confirm('Êtes-vous sûr de vouloir supprimer cette réservation ? Cette action est irréversible.')) {
+      const reservation = this.reservations.find(r => r._id === id);
+      if (reservation) {
+        reservation.saving = true;
+      }
+
+      this.reservationService.deleteReservation(id).subscribe({
+        next: () => {
+          this.showToast('🗑️ Réservation supprimée avec succès', 'success');
+          this.loadReservations(); // Recharger la liste
+          this.loadStats(); // Recharger les statistiques
+        },
+        error: (err) => {
+          console.error('Erreur suppression:', err);
+          if (reservation) {
+            reservation.saving = false;
+          }
+          
+          let errorMessage = 'Erreur lors de la suppression';
+          if (err.error?.message) {
+            errorMessage = err.error.message;
+          } else if (err.status === 404) {
+            errorMessage = 'Réservation non trouvée';
+          }
+          
+          this.showToast(`❌ ${errorMessage}`, 'error');
+        }
+      });
+    }
+  }
+
+  // Éditer une réservation
+  editReservation(id: string) {
+    if (!id) {
+      this.showToast('❌ ID de réservation invalide', 'error');
+      return;
+    }
+
+    // Charger les détails de la réservation
+    this.reservationService.getReservation(id).subscribe({
+      next: (reservation) => {
+        console.log('Réservation à modifier:', reservation);
+        this.openEditModal(reservation);
+      },
+      error: (err) => {
+        console.error('Erreur chargement réservation:', err);
+        this.showToast('❌ Erreur lors du chargement de la réservation', 'error');
+      }
+    });
+  }
+
+  // Ouvrir un modal d'édition
+  openEditModal(reservation: any) {
+    // Implémentez votre logique de modal ici
+    const message = `
+      Édition de la réservation: ${reservation.referenceReservation}
+      Départ: ${reservation.depart}
+      Destination: ${reservation.destinationId?.nom}
+      Passagers: ${reservation.passagers?.length || 0}
+      Prix: ${reservation.prixTotal} FCFA
+    `;
+    alert(message);
   }
 
   // Afficher un message de confirmation
@@ -106,8 +196,8 @@ export class ReservationManagement implements OnInit {
     this.showToast(`❌ ${message}`, 'error');
   }
 
-  // Système de notification toast
-  showToast(message: string, type: 'success' | 'error' | 'info' = 'info') {
+  // Système de notification toast avec type 'warning' inclus
+  showToast(message: string, type: 'success' | 'error' | 'info' | 'warning' = 'info') {
     // Créer un élément toast
     const toast = document.createElement('div');
     toast.className = `toast toast-${type}`;
@@ -123,15 +213,31 @@ export class ReservationManagement implements OnInit {
       z-index: 1000;
       animation: slideIn 0.3s ease;
       max-width: 400px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     `;
 
     // Styles selon le type
     const styles = {
       success: 'background: #28a745;',
       error: 'background: #dc3545;',
-      info: 'background: #17a2b8;'
+      info: 'background: #17a2b8;',
+      warning: 'background: #ffc107; color: #000;'
     };
     toast.style.cssText += styles[type];
+
+    // Ajouter les animations CSS
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes slideIn {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+      }
+      @keyframes slideOut {
+        from { transform: translateX(0); opacity: 1; }
+        to { transform: translateX(100%); opacity: 0; }
+      }
+    `;
+    document.head.appendChild(style);
 
     // Ajouter au DOM
     document.body.appendChild(toast);
@@ -142,6 +248,9 @@ export class ReservationManagement implements OnInit {
       setTimeout(() => {
         if (document.body.contains(toast)) {
           document.body.removeChild(toast);
+        }
+        if (document.head.contains(style)) {
+          document.head.removeChild(style);
         }
       }, 300);
     }, 3000);
@@ -163,7 +272,6 @@ export class ReservationManagement implements OnInit {
           p.nom?.toLowerCase().includes(searchLower) ||
           `${p.prenom} ${p.nom}`.toLowerCase().includes(searchLower)
         ) ||
-        // Recherche par statut
         this.getStatusText(r.statut).toLowerCase().includes(searchLower)
       );
     }
@@ -174,6 +282,15 @@ export class ReservationManagement implements OnInit {
 
   get totalPages(): number {
     return Math.ceil(this.filteredReservations.length / this.itemsPerPage);
+  }
+
+  // Méthodes utilitaires pour la pagination
+  getStartIndex(): number {
+    return (this.currentPage - 1) * this.itemsPerPage;
+  }
+
+  getEndIndex(): number {
+    return Math.min(this.currentPage * this.itemsPerPage, this.filteredReservations.length);
   }
 
   // Navigation des pages
@@ -222,31 +339,32 @@ export class ReservationManagement implements OnInit {
     return statusMap[statut] || statut;
   }
 
-  // Méthodes d'action
+  // Voir les détails d'une réservation
   viewReservation(id: string) {
-    console.log('Voir réservation:', id);
-    alert(`Voir les détails de la réservation ${id}`);
-  }
-
-  editReservation(id: string) {
-    console.log('Modifier réservation:', id);
-    alert(`Modifier la réservation ${id}`);
-  }
-
-  deleteReservation(id: string) {
-    if (confirm('Êtes-vous sûr de vouloir supprimer cette réservation ? Cette action est irréversible.')) {
-      this.reservationService.deleteReservation(id).subscribe({
-        next: () => {
-          this.showToast('🗑️ Réservation supprimée avec succès', 'success');
-          this.loadReservations();
-          this.loadStats();
-        },
-        error: (err) => {
-          console.error('Erreur suppression:', err);
-          this.showToast('❌ Erreur lors de la suppression de la réservation', 'error');
-        }
-      });
+    if (!id) {
+      this.showToast('❌ ID de réservation invalide', 'error');
+      return;
     }
+    
+    this.reservationService.getReservation(id).subscribe({
+      next: (reservation) => {
+        const message = `
+          Détails de la réservation:
+          Référence: ${reservation.referenceReservation}
+          Départ: ${reservation.depart}
+          Destination: ${reservation.destinationId?.nom}
+          Passagers: ${reservation.passagers?.length || 0}
+          Prix Total: ${reservation.prixTotal} FCFA
+          Statut: ${this.getStatusText(reservation.statut)}
+          Date: ${new Date(reservation.createdAt).toLocaleDateString('fr-FR')}
+        `;
+        alert(message);
+      },
+      error: (err) => {
+        console.error('Erreur chargement détails:', err);
+        this.showToast('❌ Erreur lors du chargement des détails', 'error');
+      }
+    });
   }
 
   // Réinitialiser la recherche
@@ -257,28 +375,35 @@ export class ReservationManagement implements OnInit {
 
   // Exporter les données
   exportToCSV() {
+    if (this.reservations.length === 0) {
+      this.showToast('❌ Aucune donnée à exporter', 'warning');
+      return;
+    }
+
     const headers = ['Référence', 'Départ', 'Destination', 'Passagers', 'Noms des Passagers', 'Prix Total', 'Date', 'Statut'];
     
     const csvData = this.reservations.map(r => [
-      r.referenceReservation,
-      r.depart,
-      r.destinationId?.nom,
-      r.passagers?.length,
-      r.passagers?.map((p: any) => `${p.prenom} ${p.nom}`).join('; ') || 'Aucun',
+      `"${r.referenceReservation}"`,
+      `"${r.depart}"`,
+      `"${r.destinationId?.nom || r.vol?.destination || 'N/A'}"`,
+      r.passagers?.length || 0,
+      `"${r.passagers?.map((p: any) => `${p.prenom} ${p.nom}`).join('; ') || 'Aucun'}"`,
       r.prixTotal,
-      new Date(r.createdAt).toLocaleDateString('fr-FR'),
-      this.getStatusText(r.statut)
+      `"${new Date(r.createdAt).toLocaleDateString('fr-FR')}"`,
+      `"${this.getStatusText(r.statut)}"`
     ].join(','));
     
     const csvContent = [headers.join(','), ...csvData].join('\n');
-    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = window.URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
     link.download = `reservations_${new Date().toISOString().split('T')[0]}.csv`;
+    document.body.appendChild(link);
     link.click();
+    document.body.removeChild(link);
     window.URL.revokeObjectURL(url);
     
-    this.showToast('📊 Données exportées en CSV', 'success');
+    this.showToast('📊 Données exportées en CSV avec succès', 'success');
   }
 }

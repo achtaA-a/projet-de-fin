@@ -380,4 +380,4 @@ exports.obtenirStatistiques = async (req, res) => {
       message: 'Erreur lors de la récupération des statistiques'
     });
   }
-};
+};   
