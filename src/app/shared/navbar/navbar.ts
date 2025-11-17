@@ -9,9 +9,9 @@ import {
   CommonModule
 } from '@angular/common';
 import {
+  Router,
   RouterLink,
   RouterLinkActive,
-  Router,
   NavigationEnd
 } from '@angular/router';
 import {
@@ -27,7 +27,8 @@ import {
   Observable
 } from 'rxjs';
 import {
-  HttpClient
+  HttpClient,
+  HttpHeaders
 } from '@angular/common/http';
 import {
   AuthService
@@ -139,6 +140,41 @@ export class NavbarComponent implements OnInit, OnDestroy {
     this.routerSubscription?.unsubscribe();
   }
 
+  // ------------------- Scroll vers Destination -------------------
+  scrollToDestination() {
+    this.isMenuCollapsed = true;
+    this.showContactModal = false;
+    this.showLoginModal = false;
+    this.showForgotPasswordModal = false;
+    document.body.classList.remove('modal-open');
+
+    if (this.router.url === '/') {
+      this.scrollTo('destinations');
+    } else {
+      this.router.navigate(['/']).then(() => {
+        setTimeout(() => {
+          this.scrollTo('destinations');
+        }, 300);
+      });
+    }
+  }
+
+  // ------------------- Scroll & Navbar -------------------
+  @HostListener('window:scroll', [])
+  onWindowScroll() {
+    this.isNavbarScrolled = window.pageYOffset > 20;
+  }
+
+  scrollTo(section: string) {
+    if (this.router.url === '/') {
+      const element = document.getElementById(section);
+      element?.scrollIntoView({ behavior: 'smooth' });
+    } else {
+      this.router.navigate(['/'], { fragment: section });
+    }
+    this.isMenuCollapsed = true;
+  }
+
   // ------------------- Contact Modal -------------------
   openContactModal() {
     this.showContactModal = true;
@@ -171,25 +207,9 @@ export class NavbarComponent implements OnInit, OnDestroy {
       error: (err) => {
         console.error('❌ Erreur envoi message :', err);
         this.isSubmitting = false;
-        this.errorMessage = err?.error?.error || 'Erreur lors de l’envoi du message.';
+        this.errorMessage = err?.error?.error || 'Erreur lors de l\'envoi du message.';
       }
     });
-  }
-
-  // ------------------- Scroll & Navbar -------------------
-  @HostListener('window:scroll', [])
-  onWindowScroll() {
-    this.isNavbarScrolled = window.pageYOffset > 20;
-  }
-
-  scrollTo(section: string) {
-    if (this.router.url === '/') {
-      const element = document.getElementById(section);
-      element?.scrollIntoView({ behavior: 'smooth' });
-    } else {
-      this.router.navigate(['/'], { fragment: section });
-    }
-    this.isMenuCollapsed = true;
   }
 
   // ------------------- Thème -------------------
@@ -249,8 +269,16 @@ export class NavbarComponent implements OnInit, OnDestroy {
         this.isSubmitting = false;
         this.closeLoginModal();
         this.loginFormData = { email: '', password: '' };
+
+        // ✅ Stocker le token
+        if (res?.token) {
+          localStorage.setItem('token', res.token);
+          this.authService.setToken(res.token);
+        }
+
         this.utilisateurConnecte = this.authService.getUtilisateurConnecte();
         this.isLoggedIn = true;
+        this.router.navigate(['/admin']);
       },
       error: (err) => {
         this.isSubmitting = false;
@@ -262,6 +290,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
   // ------------------- Auth: Déconnexion -------------------
   logout() {
     this.authService.deconnexion();
+    localStorage.removeItem('token');
     this.isLoggedIn = false;
     this.utilisateurConnecte = null;
     this.router.navigate(['/']);
@@ -281,7 +310,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
       },
       error: (err) => {
         this.isSubmitting = false;
-        this.errorMessage = err?.error?.message || 'Erreur lors de l’envoi du lien.';
+        this.errorMessage = err?.error?.message || 'Erreur lors de l\'envoi du lien.';
       }
     });
   }

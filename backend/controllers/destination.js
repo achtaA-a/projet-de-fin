@@ -68,21 +68,70 @@ exports.creerDestination = async (req, res) => {
     // On récupère toutes les données du corps
     const data = req.body;
 
-    // Si une image a été uploadée, on l’ajoute au champ `image`
+    // Si une image a été uploadée, on l'ajoute au champ `image`
     if (req.file) {
       data.image = `/uploads/${req.file.filename}`;
     }
 
+    // CORRECTION: Structurer les données imbriquées
+    const donneesDestination = {
+      nom: data.nom,
+      code: data.code,
+      pays: data.pays,
+      ville: data.ville,
+      description: data.description,
+      prix: data.prix,
+      dureeVol: data.dureeVol,
+      volsParSemaine: data.volsParSemaine,
+      avion: data.avion,
+      fuseauHoraire: data.fuseauHoraire || 'UTC+1',
+      estActif: data.estActif !== 'false', // Convertir en boolean
+      image: data.image,
+      aeroport: {
+        nom: data['aeroport[nom]'] || data.aeroport?.nom,
+        code: data['aeroport[code]'] || data.aeroport?.code
+      }
+    };
+
+    // Ajouter les coordonnées si présentes
+    if (data['coordonnees[latitude]'] || data.coordonnees?.latitude) {
+      donneesDestination.coordonnees = {
+        latitude: parseFloat(data['coordonnees[latitude]'] || data.coordonnees?.latitude),
+        longitude: parseFloat(data['coordonnees[longitude]'] || data.coordonnees?.longitude)
+      };
+    }
+
+    console.log('📦 Données destination préparées:', donneesDestination);
+
     // Créer la nouvelle destination
-    const nouvelleDestination = await Destination.create(data);
+    const nouvelleDestination = await Destination.create(donneesDestination);
 
     res.status(201).json({
       statut: 'succes',
+      message: 'Destination créée avec succès',
       donnees: {
         destination: nouvelleDestination,
       },
     });
   } catch (erreur) {
+    console.error('❌ Erreur création destination:', erreur);
+    
+    if (erreur.name === 'ValidationError') {
+      const details = Object.values(erreur.errors).map(e => e.message);
+      return res.status(400).json({
+        statut: 'erreur',
+        message: 'Erreur de validation des données',
+        details
+      });
+    }
+
+    if (erreur.code === 11000) {
+      return res.status(400).json({
+        statut: 'erreur',
+        message: 'Une destination avec ce nom ou code existe déjà'
+      });
+    }
+
     res.status(400).json({
       statut: 'erreur',
       message: erreur.message,

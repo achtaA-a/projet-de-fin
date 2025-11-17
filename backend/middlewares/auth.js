@@ -1,11 +1,10 @@
 const jwt = require('jsonwebtoken');
 const Utilisateur = require('../models/usersModel');
 
-exports.protection = async (req, res, next) => {
+exports.proteger = async (req, res, next) => {
   try {
     let token;
-
-    // Vérifier si le token est présent dans les headers
+    
     if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
       token = req.headers.authorization.split(' ')[1];
     }
@@ -13,29 +12,58 @@ exports.protection = async (req, res, next) => {
     if (!token) {
       return res.status(401).json({
         statut: 'erreur',
-        message: 'Accès non autorisé. Veuillez vous connecter.'
+        message: 'Accès non autorisé. Token manquant.'
       });
     }
 
-    // Vérifier le token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-    // Vérifier si l'utilisateur existe toujours
-    const utilisateurActuel = await Utilisateur.findById(decoded.id);
-    if (!utilisateurActuel) {
+    const utilisateur = await Utilisateur.findById(decoded.id).select('-motDePasse');
+    
+    if (!utilisateur) {
       return res.status(401).json({
         statut: 'erreur',
-        message: "L'utilisateur n'existe plus."
+        message: 'Token invalide. Utilisateur non trouvé.'
       });
     }
 
-    // Ajouter l'utilisateur à la requête
-    req.utilisateur = utilisateurActuel;
+    if (!utilisateur.estActif) {
+      return res.status(401).json({
+        statut: 'erreur',
+        message: 'Compte désactivé.'
+      });
+    }
+
+    req.utilisateur = utilisateur;
     next();
   } catch (erreur) {
+    console.error('Erreur authentification:', erreur);
     return res.status(401).json({
       statut: 'erreur',
-      message: 'Token invalide'
+      message: 'Token invalide.'
     });
   }
+};
+
+// Version corrigée du middleware restreindreA
+exports.restreindreA = (...roles) => {
+  return (req, res, next) => {
+    if (!req.utilisateur || !roles.includes(req.utilisateur.role)) {
+      return res.status(403).json({
+        statut: 'erreur',
+        message: 'Accès non autorisé. Permissions insuffisantes.'
+      });
+    }
+    next();
+  };
+};
+
+// Alternative plus simple si vous avez des problèmes avec restreindreA
+exports.estAdmin = (req, res, next) => {
+  if (!req.utilisateur || req.utilisateur.role !== 'admin') {
+    return res.status(403).json({
+      statut: 'erreur',
+      message: 'Accès réservé aux administrateurs.'
+    });
+  }
+  next();
 };

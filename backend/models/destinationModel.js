@@ -1,51 +1,84 @@
 const mongoose = require('mongoose');
 
-const schemaDestination = new mongoose.Schema({
+const destinationSchema = new mongoose.Schema({
   nom: {
     type: String,
-    required: [true, 'Le nom de la destination est requis'],
-    trim: true
+    required: [true, 'Le nom de la destination est obligatoire'],
+    trim: true,
+    unique: true
   },
   code: {
     type: String,
-    required: [true, 'Le code de la destination est requis'],
+    required: [true, 'Le code de la destination est obligatoire'],
+    trim: true,
     uppercase: true,
-    maxlength: 3
+    unique: true,
+    maxlength: [3, 'Le code doit contenir 3 caractères']
+  },
+  pays: {
+    type: String,
+    required: [true, 'Le pays est obligatoire'],
+    trim: true
+  },
+  ville: {
+    type: String,
+    required: [true, 'La ville est obligatoire'],
+    trim: true
+  },
+  description: {
+    type: String,
+    trim: true
   },
   image: {
     type: String,
-    required: [true, "L'image de la destination est requise"]
-  },
-  prix: {
-    type: String,
-    required: [true, 'Le prix est requis']
-  },
-  dureeVol: {
-    type: String,
-    required: [true, 'La durée du vol est requise']
-  },
-  volsParSemaine: {
-    type: String,
-    required: [true, 'Le nombre de vols par semaine est requis']
-  },
-  avion: {
-    type: String,
-    required: [true, "Le type d'avion est requis"]
+    default: null
   },
   estActif: {
     type: Boolean,
     default: true
   },
   coordonnees: {
-    latitude: Number,
-    longitude: Number
+    latitude: {
+      type: Number,
+      min: -90,
+      max: 90
+    },
+    longitude: {
+      type: Number,
+      min: -180,
+      max: 180
+    }
+  },
+  fuseauHoraire: {
+    type: String,
+    default: 'UTC+1'
+  },
+  aeroport: {
+    nom: {
+      type: String,
+      required: [true, 'Le nom de l\'aéroport est obligatoire'],
+      trim: true
+    },
+    code: {
+      type: String,
+      required: [true, 'Le code de l\'aéroport est obligatoire'],
+      trim: true,
+      uppercase: true,
+      maxlength: [4, 'Le code de l\'aéroport doit contenir 3-4 caractères']
+    }
   }
 }, {
   timestamps: true
 });
 
-// Index pour les recherches
-schemaDestination.index({ nom: 'text', code: 'text' });
-schemaDestination.index({ estActif: 1 });
+// Index pour améliorer les performances
+destinationSchema.index({ estActif: 1 });
+destinationSchema.index({ pays: 1, ville: 1 });
+destinationSchema.index({ code: 1 });
 
-module.exports = mongoose.model('Destination', schemaDestination);
+// Méthode pour obtenir le nom complet
+destinationSchema.methods.getNomComplet = function() {
+  return `${this.ville}, ${this.pays} (${this.code})`;
+};
+
+module.exports = mongoose.model('Destination', destinationSchema);

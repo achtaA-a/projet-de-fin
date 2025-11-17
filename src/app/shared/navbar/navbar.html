@@ -56,38 +56,15 @@
             <i class="fas fa-ticket-alt d-lg-none me-2"></i> Réserver un vol
           </a>
         </li>
-
         <li class="nav-item">
           <a
             class="nav-link"
             href="#destinations"
-            (click)="scrollTo('destinations'); isMenuCollapsed = true; $event.preventDefault()"
+            (click)="scrollToDestination(); $event.preventDefault()"
           >
             <i class="fas fa-map-marked-alt d-lg-none me-2"></i> Destinations
           </a>
         </li>
-
-        <li class="nav-item">
-          <a
-            class="nav-link"
-            [routerLink]="['/admin']"
-            [routerLinkActive]="['active']"
-            (click)="isMenuCollapsed = true"
-          >
-            <i class="fas fa-cog d-lg-none me-2"></i> Admin
-          </a>
-        </li>
-
-        <li class="nav-item">
-          <a
-            class="nav-link"
-            href="#promotions"
-            (click)="scrollTo('promotions'); isMenuCollapsed = true; $event.preventDefault()"
-          >
-            <i class="fas fa-percentage d-lg-none me-2"></i> Promotions
-          </a>
-        </li>
-
         <li class="nav-item">
           <a
             class="nav-link"

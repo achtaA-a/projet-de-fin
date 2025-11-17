@@ -1,1 +1,176 @@
-<p>admin works!</p>
+<!-- admin.component.html -->
+<div class="admin-container" [class.sidebar-collapsed]="!sidebarOpen">
+
+  <!-- ===== Sidebar ===== -->
+  <aside class="sidebar" [class.collapsed]="!sidebarOpen">
+
+    <!-- Sidebar Header -->
+    <div class="sidebar-header">
+      <div class="logo">
+        <span class="logo-icon">✈️</span>
+        <span class="logo-text" *ngIf="sidebarOpen">Admin Dashboard</span>
+      </div>
+
+      <button 
+        class="toggle-btn" 
+        (click)="toggleSidebar()" 
+        [title]="sidebarOpen ? 'Réduire' : 'Étendre'">
+        {{ sidebarOpen ? '◀' : '▶' }}
+      </button>
+    </div>
+
+    <!-- User Profile -->
+    <div class="user-profile" *ngIf="sidebarOpen && currentUser">
+      <div class="user-avatar">
+        {{ currentUser.avatar || '👨‍💼' }}
+      </div>
+      <div class="user-info">
+        <h4 class="user-name">{{ currentUser.name }}</h4>
+        <p class="user-role">{{ currentUser.role }}</p>
+      </div>
+    </div>
+
+    <!-- Navigation Menu -->
+    <nav class="sidebar-nav">
+      <ul class="menu">
+        <li *ngFor="let item of menuItems">
+          <a 
+            *ngIf="hasPermission(item.permission || '')"
+            class="menu-item"
+            [routerLink]="item.path"
+            routerLinkActive="active"
+            [class.menu-item-collapsed]="!sidebarOpen">
+
+            <span class="menu-icon">{{ item.icon }}</span>
+            <span class="menu-label" *ngIf="sidebarOpen">{{ item.label }}</span>
+
+            <span class="menu-badge" *ngIf="item.badge && sidebarOpen">
+              {{ item.badge }}
+            </span>
+
+            <!-- Tooltip en mode réduit -->
+            <span class="menu-tooltip" *ngIf="!sidebarOpen">
+              {{ item.label }}
+            </span>
+          </a>
+        </li>
+      </ul>
+    </nav>
+
+    <!-- Logout -->
+    <div class="sidebar-footer">
+      <button 
+        class="logout-btn"
+        [class.collapsed]="!sidebarOpen"
+        (click)="logout()">
+
+        <span class="logout-icon">🚪</span>
+        <span class="logout-text" *ngIf="sidebarOpen">Déconnexion</span>
+      </button>
+    </div>
+
+  </aside>
+
+  <!-- ===== Main Content ===== -->
+  <main class="main-content">
+
+    <!-- Header -->
+    <header class="dashboard-header">
+      <div class="header-left">
+        <h1 class="page-title">Tableau de Bord Admin</h1>
+        <p class="page-subtitle">Gestion complète des vols, utilisateurs et réservations</p>
+      </div>
+
+      <div class="header-right">
+        <div class="header-actions">
+
+          <!-- Notifications -->
+          <button class="action-btn notification-btn" title="Notifications">
+            <span class="icon">🔔</span>
+            <span class="notification-badge">5</span>
+          </button>
+
+          <!-- User Menu -->
+          <div class="user-menu">
+            <span class="user-greeting">Bonjour, {{ currentUser?.name }}</span>
+            <div class="user-avatar-small">
+              {{ currentUser?.avatar || '👨‍💼' }}
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </header>
+
+    <!-- ===== Page Content ===== -->
+    <section class="content-wrapper">
+
+      <!-- Breadcrumb + Actions -->
+      <div class="content-header">
+        <nav class="breadcrumb">
+          <a routerLink="/admin/dashboard" class="breadcrumb-item">Dashboard</a>
+          <span class="breadcrumb-separator">/</span>
+          <span class="breadcrumb-current">Page Actuelle</span>
+        </nav>
+
+        <div class="content-actions">
+          <button class="btn btn-primary" routerLink="/admin/vols/nouveau">
+            <span class="btn-icon">➕</span> Nouveau Vol
+          </button>
+        </div>
+      </div>
+
+      <!-- Stats Cards -->
+      <div class="stats-grid" *ngIf="!isLoading">
+        <div 
+          class="stat-card" 
+          *ngFor="let stat of stats"
+          [class]="stat.color"
+          [routerLink]="stat.route || '#'">
+
+          <div class="stat-icon">{{ stat.icon }}</div>
+
+          <div class="stat-content">
+            <h3 class="stat-title">{{ stat.title }}</h3>
+            <p class="stat-value">{{ stat.value | number }}</p>
+
+            <p 
+              class="stat-change"
+              *ngIf="stat.change"
+              [class.positive]="stat.change > 0"
+              [class.negative]="stat.change < 0">
+
+              {{ stat.change > 0 ? '+' : '' }}{{ stat.change }}%
+            </p>
+          </div>
+
+        </div>
+      </div>
+      <a routerLink="/admin/creer-destination">Créer destination</a>
+      <!-- Recent Activities -->
+      <div class="recent-activities">
+        <h3>Activités Récentes</h3>
+
+        <div class="activities-list">
+          <div class="activity-item" *ngFor="let activity of recentActivities">
+            <span class="activity-icon">{{ activity.icon }}</span>
+
+            <div class="activity-content">
+              <p class="activity-text">{{ activity.description }}</p>
+              <span class="activity-time">{{ activity.time }}</span>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- Router Outlet -->
+<div class="dashboard-section">
+  <router-outlet></router-outlet>
+</div>
+
+
+    </section>
+  </main>
+
+</div>

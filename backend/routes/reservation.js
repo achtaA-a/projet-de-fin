@@ -1,25 +1,27 @@
 const express = require('express');
-const controleurReservations = require('../controllers/reservation');
+const reservationController = require('../controllers/reservation'); 
+// ou ../controllers/reservationController selon TON fichier
 
-const routeur = express.Router();
+const router = express.Router();
 
-// Routes ouvertes, sans authentification
-routeur
-  .route('/')
-  .get(controleurReservations.obtenirReservations)
-  .post(controleurReservations.creerReservation);
+// Routes pour les réservations
+router.route('/')
+  .get(reservationController.obtenirReservations)
+  .post(reservationController.creerReservation);
 
-routeur
-  .route('/:id')
-  .get(controleurReservations.obtenirReservation)
-  .put(controleurReservations.mettreAJourReservation) // Ajout de PUT
-  .patch(controleurReservations.mettreAJourReservation) // Ajout de PATCH
-  .delete(controleurReservations.supprimerReservation); // Ajout de DELETE
+router.route('/:id')
+  .get(reservationController.obtenirReservation)
+  .put(reservationController.mettreAJourReservation)
+  .patch(reservationController.mettreAJourReservation)
+  .delete(reservationController.supprimerReservation);
 
 // Route pour récupérer par référence
-routeur.get('/reference/:reference', controleurReservations.obtenirReservationParReference);
+router.get('/reference/:reference', reservationController.obtenirReservationParReference);
 
 // Route pour les statistiques
-routeur.get('/statistiques/chiffre-affaire', controleurReservations.obtenirStatistiques);
+router.get('/statistiques/chiffre-affaire', reservationController.obtenirStatistiques);
 
-module.exports = routeur;
+// Route pour annuler une réservation
+router.patch('/:id/annuler', reservationController.annulerReservation);
+
+module.exports = router;

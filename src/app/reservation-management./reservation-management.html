@@ -36,7 +36,7 @@
           </div>
         </div>
       </div>
-      
+
       <div class="stat-card">
         <div class="stat-card-content">
           <div class="stat-icon revenue">
@@ -48,7 +48,7 @@
           </div>
         </div>
       </div>
-      
+
       <div class="stat-card">
         <div class="stat-card-content">
           <div class="stat-icon average">
@@ -74,26 +74,15 @@
         <div class="search-container">
           <div class="search-box">
             <i class="search-icon">🔍</i>
-            <input type="text" 
-                   placeholder="Rechercher une réservation, passager, destination..." 
-                   [(ngModel)]="searchTerm" 
-                   (input)="currentPage = 1"
-                   class="search-input">
-            <button *ngIf="searchTerm" 
-                    class="clear-search-btn" 
-                    (click)="clearSearch()" 
-                    title="Effacer la recherche">
+            <input type="text" placeholder="Rechercher une réservation, passager, destination..."
+              [(ngModel)]="searchTerm" (input)="currentPage = 1" class="search-input">
+            <button *ngIf="searchTerm" class="clear-search-btn" (click)="clearSearch()" title="Effacer la recherche">
               <i>✕</i>
             </button>
           </div>
         </div>
-        
-        <div class="table-info">
-          <span class="results-count">{{ filteredReservations.length }} résultat(s)</span>
-          <div class="pagination-info">
-            Page {{ currentPage }} sur {{ totalPages }}
-          </div>
-        </div>
+
+
       </div>
     </div>
 
@@ -124,7 +113,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let r of filteredReservations" class="reservation-row">
+            <tr *ngFor="let r of paginatedReservations" class="reservation-row">
               <td class="reference-cell">
                 <div class="reference-badge">
                   <strong>{{ r.referenceReservation }}</strong>
@@ -169,13 +158,12 @@
                   <span class="time">{{ r.createdAt | date:'HH:mm' }}</span>
                 </div>
               </td>
+              <!-- Dans le tableau, remplacer la cellule de statut par : -->
               <td class="status-cell">
                 <div class="status-container">
-                  <select [(ngModel)]="r.statut" 
-                          (change)="updateReservationStatus(r._id, r.statut)"
-                          class="status-select"
-                          [class]="getStatusClass(r.statut)"
-                          [disabled]="r.saving">
+                  <select [(ngModel)]="r.statut" (change)="updateReservationStatus(r._id, r.statut)"
+                    class="status-select" [class]="getStatusClass(r.statut)" [disabled]="r.saving">
+                    <!-- CORRECTION: Toujours afficher "En attente" comme option par défaut -->
                     <option value="en_attente">En attente</option>
                     <option value="confirmée">Confirmée</option>
                     <option value="annulée">Annulée</option>
@@ -229,33 +217,28 @@
         <button class="btn btn-primary" (click)="loadReservations()">Actualiser</button>
       </div>
     </div>
-
-    <!-- Pagination -->
-    <div *ngIf="filteredReservations.length > 0" class="pagination-container">
-      <div class="pagination-info">
-        Affichage de {{ getStartIndex() + 1 }} à {{ getEndIndex() }} sur {{ filteredReservations.length }} résultat(s)
+    <!-- CORRECTION: Contrôles de pagination API -->
+    <div class="api-pagination-controls">
+      <div class="items-per-page">
+        <label>Éléments par page:</label>
+        <select [(ngModel)]="itemsPerPage" (change)="onItemsPerPageChange()">
+          <option value="5">5</option>
+          <option value="10">10</option>
+          <option value="20">20</option>
+          <option value="50">50</option>
+        </select>
       </div>
-      <div class="pagination-controls">
-        <button class="btn-pagination" 
-                [disabled]="currentPage === 1" 
-                (click)="previousPage()">
-          <i>‹</i>
-          Précédent
+
+      <div class="api-pagination-info">
+        Page {{ apiPage }} sur {{ apiTotalPages }} ({{ apiTotalResults }} total)
+      </div>
+
+      <div class="api-pagination-buttons">
+        <button class="btn-pagination" [disabled]="apiPage === 1" (click)="previousApiPage()">
+          ‹ Préc.
         </button>
-        
-        <div class="page-numbers">
-          <span class="current-page">{{ currentPage }}</span>
-          <span class="page-separator">sur</span>
-          <span class="total-pages">{{ totalPages }}</span>
-        </div>
-        
-        <button class="btn-pagination" 
-                [disabled]="currentPage === totalPages" 
-                (click)="nextPage()">
-          Suivant
-          <i>›</i>
+        <button class="btn-pagination" [disabled]="apiPage === apiTotalPages" (click)="nextApiPage()">
+          Suiv. ›
         </button>
       </div>
     </div>
-  </div>
-</div>

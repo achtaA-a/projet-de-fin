@@ -25,6 +25,18 @@ interface Passager {
   nom: string;
   dateNaissance: string;
   numeroPasseport: string;
+  nationalite?: string;
+  telephone?: string;
+  email?: string;
+}
+
+interface Vol {
+  numeroVol: string;
+  depart: string;
+  destination: string;
+  dateDepart: string;
+  dateRetour?: string;
+  classe: string;
 }
 
 @Component({
@@ -38,20 +50,19 @@ export class ReservationComponent implements OnInit {
   currentStep = 1;
   today: string = new Date().toISOString().split('T')[0];
 
-  // AJOUT: Liste des aéroports de départ
   aeroportsDepart: Aeroport[] = [];
   destinationSelectionnee: Destination | null = null;
   destinations: Destination[] = [];
   recentSearches: any[] = [];
   
   flightSearch = {
-    departure: '', // MODIFICATION: Plus en dur
+    departure: '',
     destination: '',
     destinationId: '',
     departureDate: '',
     returnDate: '',
     passengers: 1,
-    travelClass: 'economy'
+    travelClass: 'economie' // CORRECTION: Utiliser 'economie' au lieu de 'economy'
   };
 
   passagers: Passager[] = [];
@@ -65,14 +76,12 @@ export class ReservationComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.chargerAeroportsDepart(); // NOUVELLE MÉTHODE
+    this.chargerAeroportsDepart();
     this.recupererDestination();
     this.loadDestinations();
   }
 
-  // NOUVELLE MÉTHODE: Charger les aéroports de départ
   chargerAeroportsDepart() {
-    // Données des aéroports disponibles
     this.aeroportsDepart = [
       { code: 'NDJ', nom: 'Aéroport International de N\'Djamena', ville: 'N\'Djamena', pays: 'Tchad' },
       { code: 'MQQ', nom: 'Aéroport de Moundou', ville: 'Moundou', pays: 'Tchad' },
@@ -81,7 +90,6 @@ export class ReservationComponent implements OnInit {
       { code: 'SRH', nom: 'Aéroport de Sarh', ville: 'Sarh', pays: 'Tchad' }
     ];
 
-    // Définir N'Djamena comme départ par défaut
     this.flightSearch.departure = 'NDJ';
   }
 
@@ -118,8 +126,8 @@ export class ReservationComponent implements OnInit {
   calculerPrix() {
     if (this.destinationSelectionnee) {
       const prixBase = parseInt(this.destinationSelectionnee.prix) || 50000;
-      const classMultiplier = this.flightSearch.travelClass === 'economy' ? 1 :
-                              this.flightSearch.travelClass === 'business' ? 1.5 : 2;
+      const classMultiplier = this.flightSearch.travelClass === 'economie' ? 1 :
+                              this.flightSearch.travelClass === 'affaire' ? 1.5 : 2;
       this.prixTotal = prixBase * this.flightSearch.passengers * classMultiplier;
     }
   }
@@ -162,7 +170,6 @@ export class ReservationComponent implements OnInit {
     ];
   }
 
-  // NOUVELLE MÉTHODE: Obtenir le nom complet de l'aéroport de départ
   getDepartureName(code: string): string {
     const aeroport = this.aeroportsDepart.find(a => a.code === code);
     return aeroport ? `${aeroport.code} - ${aeroport.ville}` : code;
@@ -183,13 +190,11 @@ export class ReservationComponent implements OnInit {
       return;
     }
 
-    // Vérifier que le départ et la destination sont différents
     if (this.flightSearch.departure === this.flightSearch.destination) {
       alert('Le point de départ et la destination doivent être différents');
       return;
     }
 
-    // Si pas de destination sélectionnée via le bouton "Réserver", trouver l'ID
     if (!this.flightSearch.destinationId) {
       const dest = this.destinations.find(d => d.code === this.flightSearch.destination);
       if (dest) {
@@ -205,7 +210,6 @@ export class ReservationComponent implements OnInit {
 
   onDepartureChange() {
     console.log('Aéroport de départ sélectionné:', this.flightSearch.departure);
-    // Réinitialiser la destination si nécessaire
     if (this.flightSearch.departure === this.flightSearch.destination) {
       this.flightSearch.destination = '';
       this.flightSearch.destinationId = '';
@@ -236,7 +240,9 @@ export class ReservationComponent implements OnInit {
       prenom: '',
       nom: '',
       dateNaissance: '',
-      numeroPasseport: ''
+      numeroPasseport: '',
+      nationalite: 'Tchadienne',
+      telephone: ''
     }));
   }
 
@@ -270,19 +276,43 @@ export class ReservationComponent implements OnInit {
       return;
     }
 
+    // CORRECTION: Utiliser les valeurs françaises pour les classes
+    const classeMap: {[key: string]: string} = {
+      'economie': 'economie',
+      'affaire': 'affaire', 
+      'premiere': 'premiere'
+    };
+
+    const classeVol = classeMap[this.flightSearch.travelClass] || 'economie';
+
+    // Préparer les données des passagers avec tous les champs requis
+    const passagersComplets = this.passagers.map((passager, index) => ({
+      prenom: passager.prenom.trim(),
+      nom: passager.nom.trim(),
+      dateNaissance: new Date(passager.dateNaissance).toISOString(),
+      numeroPasseport: passager.numeroPasseport.trim().toUpperCase(),
+      nationalite: passager.nationalite || 'Tchadienne',
+      telephone: passager.telephone || '',
+      email: index === 0 ? (passager.email || '') : undefined
+    }));
+
+    // CORRECTION: Le backend génère maintenant le numéro de vol automatiquement
+    const volData = {
+      depart: this.flightSearch.departure,
+      destination: this.flightSearch.destination,
+      dateDepart: new Date(this.flightSearch.departureDate).toISOString(),
+      dateRetour: this.flightSearch.returnDate ? new Date(this.flightSearch.returnDate).toISOString() : undefined,
+      classe: classeVol // Utiliser la classe normalisée
+    };
+
     const reservationData = {
-      depart: this.flightSearch.departure, // AJOUT: Aéroport de départ
+      depart: this.flightSearch.departure,
       destinationId: this.flightSearch.destinationId,
-      vol: {
-        depart: this.flightSearch.departure,
-        destination: this.flightSearch.destination,
-        dateDepart: this.flightSearch.departureDate,
-        dateRetour: this.flightSearch.returnDate,
-        classe: this.flightSearch.travelClass
-      },
-      passagers: this.passagers,
+      vol: volData,
+      passagers: passagersComplets,
       prixTotal: this.prixTotal,
-      destinationDetails: this.destinationSelectionnee
+      destinationDetails: this.destinationSelectionnee,
+      utilisateurId: null
     };
 
     console.log('📦 Données réservation envoyées:', reservationData);
@@ -290,18 +320,33 @@ export class ReservationComponent implements OnInit {
     // Envoi vers l'API
     this.http.post('http://localhost:3000/api/reservations', reservationData).subscribe({
       next: (res: any) => {
-        const reference = res.donnees?.reservation?.referenceReservation || 'REF-' + Date.now().toString().slice(-8);
-        alert(`✅ Réservation créée avec succès !\n📋 Numéro de référence : ${reference}\n💰 Prix total : ${this.prixTotal.toLocaleString()} FCFA`);
-        this.currentStep = 5;
+        console.log('✅ Réponse réservation:', res);
+        const reference = res.donnees?.reservation?.referenceReservation;
+        if (reference) {
+          alert(`✅ Réservation créée avec succès !\n📋 Numéro de référence : ${reference}\n💰 Prix total : ${this.prixTotal.toLocaleString()} FCFA`);
+          this.currentStep = 5;
+        } else {
+          throw new Error('Référence de réservation manquante');
+        }
       },
-      error: err => {
+      error: (err: any) => {
         console.error('❌ Erreur réservation:', err);
-        alert('❌ Erreur lors de la réservation : ' + (err.error?.message || 'Erreur serveur'));
         
-        // Simulation en cas d'erreur
-        const reference = 'REF-' + Date.now().toString().slice(-8);
-        alert(`✅ Réservation simulée !\n📋 Référence : ${reference}\n💰 Prix : ${this.prixTotal.toLocaleString()} FCFA`);
-        this.currentStep = 5;
+        // Gestion améliorée des erreurs
+        let errorMessage = 'Erreur lors de la réservation';
+        
+        if (err.error?.details) {
+          // Erreurs de validation détaillées
+          errorMessage = 'Erreurs de validation:\n' + err.error.details.join('\n');
+        } else if (err.error?.message) {
+          errorMessage = err.error.message;
+        } else if (err.status === 400) {
+          errorMessage = 'Données invalides envoyées au serveur';
+        } else if (err.status === 500) {
+          errorMessage = 'Erreur interne du serveur';
+        }
+        
+        alert(`❌ ${errorMessage}`);
       }
     });
   }
@@ -310,5 +355,21 @@ export class ReservationComponent implements OnInit {
     if (this.currentStep > 1) {
       this.currentStep--;
     }
+  }
+
+  nouvelleReservation() {
+    this.currentStep = 1;
+    this.flightSearch = {
+      departure: 'NDJ',
+      destination: '',
+      destinationId: '',
+      departureDate: '',
+      returnDate: '',
+      passengers: 1,
+      travelClass: 'economie' // CORRECTION: Valeur par défaut en français
+    };
+    this.passagers = [];
+    this.prixTotal = 0;
+    this.destinationSelectionnee = null;
   }
 }

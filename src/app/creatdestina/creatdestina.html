@@ -1,203 +1,192 @@
-<div class="container mt-4">
-    <div class="row justify-content-center">
-      <div class="col-lg-8">
-        <div class="card">
-          <div class="card-header bg-primary text-white">
-            <h4 class="mb-0">
-              <i class="fas fa-plus-circle me-2"></i>Créer une nouvelle destination
-            </h4>
+<div class="container mx-auto p-6 max-w-4xl">
+  <h1 class="text-3xl font-bold text-gray-800 mb-8">Créer une Nouvelle Destination</h1>
+
+  <!-- Messages d'alerte -->
+  <div *ngIf="erreur" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
+    {{ erreur }}
+  </div>
+
+  <div *ngIf="succes" class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-6">
+    {{ succes }}
+  </div>
+
+  <form [formGroup]="destinationForm" (ngSubmit)="onSubmit()" class="space-y-6">
+    
+    <!-- Section Informations de Base -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <!-- Nom -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Nom de la destination *</label>
+        <input type="text" formControlName="nom" 
+               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+               placeholder="Ex: Paris">
+        <div *ngIf="nom?.invalid && nom?.touched" class="text-red-600 text-sm mt-1">
+          <div *ngIf="nom?.errors?.['required']">Le nom est obligatoire</div>
+          <div *ngIf="nom?.errors?.['minlength']">Le nom doit avoir au moins 2 caractères</div>
+        </div>
+      </div>
+
+      <!-- Code (3 lettres) -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Code IATA (3 lettres) *</label>
+        <input type="text" formControlName="code" 
+               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 uppercase"
+               placeholder="Ex: PAR" maxlength="3">
+        <div *ngIf="code?.invalid && code?.touched" class="text-red-600 text-sm mt-1">
+          <div *ngIf="code?.errors?.['required']">Le code est obligatoire</div>
+          <div *ngIf="code?.errors?.['pattern']">Le code doit contenir 3 lettres majuscules</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section Localisation -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <!-- Pays -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Pays *</label>
+        <select formControlName="pays"
+                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+          <option value="">Sélectionnez un pays</option>
+          <option *ngFor="let pays of paysListe" [value]="pays">{{ pays }}</option>
+        </select>
+        <div *ngIf="pays?.invalid && pays?.touched" class="text-red-600 text-sm mt-1">
+          <div *ngIf="pays?.errors?.['required']">Le pays est obligatoire</div>
+        </div>
+      </div>
+
+      <!-- Ville -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Ville *</label>
+        <input type="text" formControlName="ville" 
+               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+               placeholder="Ex: Paris">
+        <div *ngIf="ville?.invalid && ville?.touched" class="text-red-600 text-sm mt-1">
+          <div *ngIf="ville?.errors?.['required']">La ville est obligatoire</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section Aéroport (OBLIGATOIRE) -->
+    <div class="border-t pt-6">
+      <h3 class="text-lg font-semibold text-gray-800 mb-4">Informations de l'Aéroport</h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Nom de l'aéroport -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Nom de l'aéroport *</label>
+          <input type="text" formControlName="aeroport.nom" 
+                 class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                 placeholder="Ex: Aéroport Charles de Gaulle">
+          <div *ngIf="aeroportNom?.invalid && aeroportNom?.touched" class="text-red-600 text-sm mt-1">
+            <div *ngIf="aeroportNom?.errors?.['required']">Le nom de l'aéroport est obligatoire</div>
           </div>
-          <div class="card-body">
-            <!-- Messages d'alerte -->
-            <div *ngIf="erreur" class="alert alert-danger alert-dismissible fade show">
-              <i class="fas fa-exclamation-triangle me-2"></i>{{ erreur }}
-              <button type="button" class="btn-close" (click)="erreur = null"></button>
-            </div>
-  
-            <div *ngIf="succes" class="alert alert-success alert-dismissible fade show">
-              <i class="fas fa-check-circle me-2"></i>{{ succes }}
-              <button type="button" class="btn-close" (click)="succes = null"></button>
-            </div>
-  
-            <form [formGroup]="destinationForm" (ngSubmit)="onSubmit()" enctype="multipart/form-data">
-              <div class="row">
-                <!-- Colonne gauche -->
-                <div class="col-md-6">
-                  <!-- Nom de la destination -->
-                  <div class="mb-3">
-                    <label for="nom" class="form-label">Nom de la destination *</label>
-                    <input
-                      type="text"
-                      class="form-control"
-                      id="nom"
-                      formControlName="nom"
-                      [class.is-invalid]="nom?.invalid && nom?.touched"
-                      placeholder="Ex: Paris">
-                    <div class="invalid-feedback" *ngIf="nom?.errors?.['required'] && nom?.touched">
-                      Le nom est obligatoire
-                    </div>
-                    <div class="invalid-feedback" *ngIf="nom?.errors?.['minlength'] && nom?.touched">
-                      Le nom doit contenir au moins 2 caractères
-                    </div>
-                  </div>
-  
-                  <!-- Code de la destination -->
-                  <div class="mb-3">
-                    <label for="code" class="form-label">Code IATA *</label>
-                    <input
-                      type="text"
-                      class="form-control text-uppercase"
-                      id="code"
-                      formControlName="code"
-                      [class.is-invalid]="code?.invalid && code?.touched"
-                      placeholder="Ex: PAR"
-                      maxlength="3">
-                    <div class="invalid-feedback" *ngIf="code?.errors?.['required'] && code?.touched">
-                      Le code IATA est obligatoire
-                    </div>
-                    <div class="invalid-feedback" *ngIf="code?.errors?.['pattern'] && code?.touched">
-                      Le code doit contenir exactement 3 lettres majuscules
-                    </div>
-                    <small class="form-text text-muted">3 lettres majuscules (ex: CDG, JFK)</small>
-                  </div>
-  
-                  <!-- Prix -->
-                  <div class="mb-3">
-                    <label for="prix" class="form-label">Prix (FCFA) *</label>
-                    <div class="input-group">
-                      <input
-                        type="text"
-                        class="form-control"
-                        id="prix"
-                        formControlName="prix"
-                        [class.is-invalid]="prix?.invalid && prix?.touched"
-                        placeholder="Ex: 250000">
-                      <span class="input-group-text">FCFA</span>
-                    </div>
-                    <div class="invalid-feedback" *ngIf="prix?.errors?.['required'] && prix?.touched">
-                      Le prix est obligatoire
-                    </div>
-                    <div class="invalid-feedback" *ngIf="prix?.errors?.['pattern'] && prix?.touched">
-                      Le prix doit être un nombre valide
-                    </div>
-                  </div>
-  
-                  <!-- Durée du vol -->
-                  <div class="mb-3">
-                    <label for="dureeVol" class="form-label">Durée du vol *</label>
-                    <input
-                      type="text"
-                      class="form-control"
-                      id="dureeVol"
-                      formControlName="dureeVol"
-                      [class.is-invalid]="dureeVol?.invalid && dureeVol?.touched"
-                      placeholder="Ex: 2h30">
-                    <div class="invalid-feedback" *ngIf="dureeVol?.errors?.['required'] && dureeVol?.touched">
-                      La durée du vol est obligatoire
-                    </div>
-                  </div>
-                </div>
-  
-                <!-- Colonne droite -->
-                <div class="col-md-6">
-                  <!-- Vols par semaine -->
-                  <div class="mb-3">
-                    <label for="volsParSemaine" class="form-label">Vols par semaine *</label>
-                    <input
-                      type="text"
-                      class="form-control"
-                      id="volsParSemaine"
-                      formControlName="volsParSemaine"
-                      [class.is-invalid]="volsParSemaine?.invalid && volsParSemaine?.touched"
-                      placeholder="Ex: 28">
-                    <div class="invalid-feedback" *ngIf="volsParSemaine?.errors?.['required'] && volsParSemaine?.touched">
-                      Le nombre de vols est obligatoire
-                    </div>
-                    <div class="invalid-feedback" *ngIf="volsParSemaine?.errors?.['pattern'] && volsParSemaine?.touched">
-                      Doit être un nombre valide
-                    </div>
-                  </div>
-  
-                  <!-- Type d'avion -->
-                  <div class="mb-3">
-                    <label for="avion" class="form-label">Type d'avion *</label>
-                    <select
-                      class="form-select"
-                      id="avion"
-                      formControlName="avion"
-                      [class.is-invalid]="avion?.invalid && avion?.touched">
-                      <option value="">Sélectionnez un avion</option>
-                      <option *ngFor="let avion of avionsDisponibles" [value]="avion">
-                        {{ avion }}
-                      </option>
-                    </select>
-                    <div class="invalid-feedback" *ngIf="avion?.errors?.['required'] && avion?.touched">
-                      Le type d'avion est obligatoire
-                    </div>
-                  </div>
-  
-                  <!-- Upload d'image -->
-                  <div class="mb-3">
-                    <label for="image" class="form-label">Image de la destination *</label>
-                    <input
-                      type="file"
-                      class="form-control"
-                      id="image"
-                      accept="image/jpeg, image/png, image/webp"
-                      (change)="onImageSelectionnee($event)"
-                      [class.is-invalid]="!fichierImage && destinationForm.touched">
-                    <div class="invalid-feedback" *ngIf="!fichierImage && destinationForm.touched">
-                      Une image est obligatoire
-                    </div>
-                    <small class="form-text text-muted">
-                      Formats acceptés: JPG, PNG, WebP (max 5MB)
-                    </small>
-                  </div>
-  
-                  <!-- Prévisualisation de l'image -->
-                  <div class="mb-3" *ngIf="imagePreview">
-                    <label class="form-label">Aperçu de l'image</label>
-                    <div class="image-preview-container">
-                      <img [src]="imagePreview" class="img-thumbnail preview-image" alt="Aperçu">
-                      <button type="button" class="btn btn-sm btn-danger mt-2" (click)="supprimerImage()">
-                        <i class="fas fa-trash me-1"></i>Supprimer
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-  
-              <!-- Coordonnées (optionnelles) -->
-              <div class="row mt-3">
-                <div class="col-md-6">
-                  <label for="latitude" class="form-label">Latitude</label>
-                  <input type="number" class="form-control" id="latitude" formControlName="latitude" step="any">
-                </div>
-                <div class="col-md-6">
-                  <label for="longitude" class="form-label">Longitude</label>
-                  <input type="number" class="form-control" id="longitude" formControlName="longitude" step="any">
-                </div>
-              </div>
-  
-              <!-- Boutons de soumission -->
-              <div class="mt-4 d-flex gap-2">
-                <button type="submit" class="btn btn-primary" [disabled]="chargement">
-                  <span *ngIf="chargement" class="spinner-border spinner-border-sm me-2"></span>
-                  <i class="fas fa-save me-2" *ngIf="!chargement"></i>
-                  {{ chargement ? 'Création...' : 'Créer la destination' }}
-                </button>
-                
-                <button type="button" class="btn btn-secondary" (click)="destinationForm.reset({ estActif: true }); supprimerImage()">
-                  <i class="fas fa-undo me-2"></i>Réinitialiser
-                </button>
-  
-                <button type="button" class="btn btn-outline-secondary ms-auto" routerLink="/destinations">
-                  <i class="fas fa-arrow-left me-2"></i>Retour
-                </button>
-              </div>
-            </form>
+        </div>
+
+        <!-- Code de l'aéroport -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Code de l'aéroport (3-4 lettres) *</label>
+          <input type="text" formControlName="aeroport.code" 
+                 class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 uppercase"
+                 placeholder="Ex: CDG" maxlength="4">
+          <div *ngIf="aeroportCode?.invalid && aeroportCode?.touched" class="text-red-600 text-sm mt-1">
+            <div *ngIf="aeroportCode?.errors?.['required']">Le code de l'aéroport est obligatoire</div>
+            <div *ngIf="aeroportCode?.errors?.['pattern']">Le code doit contenir 3-4 lettres majuscules</div>
           </div>
         </div>
       </div>
     </div>
-  </div>
+
+    <!-- Section Informations de Vol -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <!-- Prix -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Prix (FCFA) *</label>
+        <input type="number" formControlName="prix" 
+               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+               placeholder="Ex: 250000">
+        <div *ngIf="prix?.invalid && prix?.touched" class="text-red-600 text-sm mt-1">
+          <div *ngIf="prix?.errors?.['required']">Le prix est obligatoire</div>
+          <div *ngIf="prix?.errors?.['pattern']">Le prix doit être un nombre</div>
+        </div>
+      </div>
+
+      <!-- Durée du vol -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Durée du vol *</label>
+        <input type="text" formControlName="dureeVol" 
+               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+               placeholder="Ex: 2h30">
+        <div *ngIf="dureeVol?.invalid && dureeVol?.touched" class="text-red-600 text-sm mt-1">
+          <div *ngIf="dureeVol?.errors?.['required']">La durée du vol est obligatoire</div>
+        </div>
+      </div>
+
+      <!-- Vols par semaine -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Vols par semaine *</label>
+        <input type="number" formControlName="volsParSemaine" 
+               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+               placeholder="Ex: 7">
+        <div *ngIf="volsParSemaine?.invalid && volsParSemaine?.touched" class="text-red-600 text-sm mt-1">
+          <div *ngIf="volsParSemaine?.errors?.['required']">Le nombre de vols est obligatoire</div>
+          <div *ngIf="volsParSemaine?.errors?.['pattern']">Doit être un nombre</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section Avion et Description -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <!-- Type d'avion -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Type d'avion *</label>
+        <select formControlName="avion"
+                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+          <option value="">Sélectionnez un avion</option>
+          <option *ngFor="let avion of avionsDisponibles" [value]="avion">{{ avion }}</option>
+        </select>
+        <div *ngIf="avion?.invalid && avion?.touched" class="text-red-600 text-sm mt-1">
+          <div *ngIf="avion?.errors?.['required']">Le type d'avion est obligatoire</div>
+        </div>
+      </div>
+
+      <!-- Description -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Description</label>
+        <textarea formControlName="description" rows="3"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Description optionnelle de la destination"></textarea>
+      </div>
+    </div>
+
+    <!-- Section Image -->
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-2">Image de la destination *</label>
+      <input type="file" id="image" (change)="onImageSelectionnee($event)" 
+             accept="image/jpeg,image/jpg,image/png,image/webp"
+             class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+      
+      <!-- Prévisualisation de l'image -->
+      <div *ngIf="imagePreview" class="mt-4">
+        <p class="text-sm text-gray-600 mb-2">Aperçu de l'image:</p>
+        <img [src]="imagePreview" alt="Aperçu" class="max-w-xs h-auto rounded-lg shadow-md">
+        <button type="button" (click)="supprimerImage()" 
+                class="mt-2 px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700">
+          Supprimer l'image
+        </button>
+      </div>
+    </div>
+
+    <!-- Boutons -->
+    <div class="flex justify-end space-x-4 pt-6">
+      <!-- CORRECTION: Utilisation de la méthode publique annulerCreation() -->
+      <button type="button" (click)="annulerCreation()" 
+              class="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50">
+        Annuler
+      </button>
+      <button type="submit" [disabled]="chargement || destinationForm.invalid || !fichierImage"
+              class="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-blue-300 disabled:cursor-not-allowed">
+        <span *ngIf="chargement">Création en cours...</span>
+        <span *ngIf="!chargement">Créer la Destination</span>
+      </button>
+    </div>
+  </form>
+</div>

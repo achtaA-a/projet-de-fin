@@ -350,41 +350,101 @@
   margin: 0;
   font-size: 14px;
 }
-
-/* Pagination */
-.pagination {
+/* ===== Pagination API ===== */
+.api-pagination-controls {
   display: flex;
-  justify-content: center;
   align-items: center;
-  gap: 16px;
-  margin-top: 24px;
-  padding: 16px;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 0.8rem 1.2rem;
+  margin-top: 1.5rem;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
 }
 
-.pagination-btn {
-  padding: 8px 16px;
-  border: 1px solid #ddd;
-  background: white;
+/* --- Items per page --- */
+.items-per-page {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.95rem;
+  color: #374151;
+}
+
+.items-per-page label {
+  font-weight: 500;
+}
+
+.items-per-page select {
+  padding: 0.4rem 0.6rem;
   border-radius: 6px;
+  border: 1px solid #d1d5db;
+  background-color: #f9fafb;
+  font-size: 0.95rem;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.items-per-page select:hover {
+  background-color: #f3f4f6;
+  border-color: #9ca3af;
+}
+
+/* --- Info (Page X sur Y) --- */
+.api-pagination-info {
+  font-size: 0.95rem;
+  color: #4b5563;
+  text-align: center;
+  flex: 1;
+}
+
+/* --- Boutons de navigation --- */
+.api-pagination-buttons {
+  display: flex;
+  gap: 0.6rem;
+}
+
+.btn-pagination {
+  padding: 0.45rem 0.9rem;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background-color: #f9fafb;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #1f2937;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
-.pagination-btn:hover:not(:disabled) {
-  background: #007bff;
-  color: white;
-  border-color: #007bff;
+.btn-pagination:hover:not(:disabled) {
+  background-color: #2563eb;
+  color: #ffffff;
+  border-color: #2563eb;
+  box-shadow: 0 2px 4px rgba(37, 99, 235, 0.3);
 }
 
-.pagination-btn:disabled {
+.btn-pagination:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
 
-.page-info {
-  font-size: 14px;
-  color: #666;
+/* --- Responsive --- */
+@media (max-width: 768px) {
+  .api-pagination-controls {
+    flex-direction: column;
+    align-items: stretch;
+    text-align: center;
+  }
+
+  .items-per-page,
+  .api-pagination-buttons {
+    justify-content: center;
+  }
 }
+
 
 /* Responsive */
 @media (max-width: 768px) {

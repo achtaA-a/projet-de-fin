@@ -23,7 +23,7 @@ export class ReservationService {
   getReservation(id: string): Observable<any> {
     return this.http.get<any>(`${this.apiUrl}/${id}`);
   }
-
+  
   /** 🔹 Obtenir une réservation par référence */
   getReservationByReference(reference: string): Observable<any> {
     return this.http.get<any>(`${this.apiUrl}/reference/${reference}`);
