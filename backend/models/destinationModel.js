@@ -53,6 +53,28 @@ const destinationSchema = new mongoose.Schema({
     type: String,
     default: 'UTC+1'
   },
+  // Informations sur les vols
+  prix: {
+    type: Number,
+    required: [true, 'Le prix est obligatoire'],
+    min: [0, 'Le prix ne peut pas être négatif']
+  },
+  dureeVol: {
+    type: String,
+    required: [true, 'La durée du vol est obligatoire'],
+    trim: true
+  },
+  volsParSemaine: {
+    type: Number,
+    required: [true, 'Le nombre de vols par semaine est obligatoire'],
+    min: [1, 'Il doit y avoir au moins 1 vol par semaine'],
+    max: [100, 'Le nombre maximum de vols par semaine est de 100']
+  },
+  avion: {
+    type: String,
+    required: [true, 'Le type d\'avion est obligatoire'],
+    trim: true
+  },
   aeroport: {
     nom: {
       type: String,

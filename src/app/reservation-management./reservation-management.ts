@@ -26,11 +26,18 @@ export class ReservationManagement implements OnInit {
   // CORRECTION: Stocker les statuts originaux pour annulation en cas d'erreur
   private originalStatuses: Map<string, string> = new Map();
 
+  // Variables pour le modal de modification
+  showEditModal: boolean = false;
+  editReservationData: any = {};
+  destinations: any[] = [];
+  saving: boolean = false;
+
   constructor(private reservationService: ReservationService) {}
 
   ngOnInit() {
     this.loadReservations();
     this.loadStats();
+    this.loadDestinations();
   }
 
   loadReservations() {
@@ -41,15 +48,22 @@ export class ReservationManagement implements OnInit {
           this.reservations = (res.donnees?.reservations || []).map((r: any) => ({
             ...r,
             saving: false,
-            // CORRECTION: Assurer que le statut est toujours défini avec "en_attente" par défaut
-            statut: r.statut || 'en_attente'
+            // CORRECTION: Normaliser les statuts avec accents vers sans accents
+            statut: this.normalizeStatus(r.statut) || 'en_attente'
           }));
           
           // CORRECTION: Sauvegarder les statuts originaux
           this.saveOriginalStatuses();
           
-          this.apiTotalPages = res.pages || 1;
-          this.apiTotalResults = res.total || 0;
+          // CORRECTION: Utiliser les données de pagination du backend
+          if (res.donnees?.pagination) {
+            this.apiTotalPages = res.donnees.pagination.pages;
+            this.apiTotalResults = res.donnees.pagination.total;
+          } else {
+            // Fallback si pas de pagination
+            this.apiTotalPages = res.pages || 1;
+            this.apiTotalResults = res.total || 0;
+          }
         } else {
           this.reservations = [];
         }
@@ -63,6 +77,18 @@ export class ReservationManagement implements OnInit {
         this.showToast('❌ Erreur lors du chargement des réservations', 'error');
       }
     });
+  }
+
+  // CORRECTION: Normaliser les statuts pour gérer les anciennes données
+  private normalizeStatus(status: string): string {
+    const statusMap: { [key: string]: string } = {
+      'confirmée': 'confirmee',
+      'annulée': 'annulee',
+      'en_attente': 'en_attente',
+      'confirmee': 'confirmee',
+      'annulee': 'annulee'
+    };
+    return statusMap[status] || status || 'en_attente';
   }
 
   // CORRECTION: Sauvegarder les statuts originaux
@@ -86,6 +112,19 @@ export class ReservationManagement implements OnInit {
       error: (err) => {
         console.error('Erreur stats:', err);
         this.showToast('❌ Erreur lors du chargement des statistiques', 'error');
+      }
+    });
+  }
+
+  // Charger les destinations pour le formulaire de modification
+  loadDestinations() {
+    this.reservationService.getDestinations().subscribe({
+      next: (res) => {
+        this.destinations = res.donnees?.destinations || res.destinations || [];
+      },
+      error: (err) => {
+        console.error('Erreur chargement destinations:', err);
+        this.showToast('❌ Erreur lors du chargement des destinations', 'error');
       }
     });
   }
@@ -194,6 +233,11 @@ export class ReservationManagement implements OnInit {
         // CORRECTION: Mettre à jour le statut original après succès
         this.originalStatuses.set(reservationId, newStatus);
         
+        // CORRECTION: Recharger la liste complète pour s'assurer la cohérence
+        setTimeout(() => {
+          this.loadReservations();
+        }, 500);
+        
         this.showStatusUpdateMessage(reservation.referenceReservation, newStatus);
         this.loadStats(); // Recharger les statistiques
       },
@@ -261,7 +305,7 @@ export class ReservationManagement implements OnInit {
     }
   }
 
-  // Éditer une réservation
+  // Éditer une réservation - ouvrir le modal de modification
   editReservation(id: string) {
     if (!id) {
       this.showToast('❌ ID de réservation invalide', 'error');
@@ -272,7 +316,7 @@ export class ReservationManagement implements OnInit {
     this.reservationService.getReservation(id).subscribe({
       next: (reservation) => {
         console.log('Réservation à modifier:', reservation);
-        this.openEditModal(reservation);
+        this.openEditModal(reservation.donnees?.reservation || reservation);
       },
       error: (err) => {
         console.error('Erreur chargement réservation:', err);
@@ -281,26 +325,93 @@ export class ReservationManagement implements OnInit {
     });
   }
 
-  // Ouvrir un modal d'édition
+  // Ouvrir le modal d'édition avec les données de la réservation
   openEditModal(reservation: any) {
-    // Implémentez votre logique de modal ici
-    const message = `
-      Édition de la réservation: ${reservation.referenceReservation}
-      Départ: ${reservation.depart}
-      Destination: ${reservation.destinationId?.nom}
-      Passagers: ${reservation.passagers?.length || 0}
-      Prix: ${reservation.prixTotal} FCFA
-    `;
-    alert(message);
+    this.editReservationData = {
+      _id: reservation._id,
+      depart: reservation.depart,
+      destinationId: reservation.destinationId?._id || reservation.destinationId,
+      vol: {
+        ...reservation.vol,
+        dateDepart: this.formatDateTimeLocal(reservation.vol?.dateDepart),
+        dateRetour: this.formatDateTimeLocal(reservation.vol?.dateRetour)
+      },
+      passagers: reservation.passagers || [],
+      prixTotal: reservation.prixTotal,
+      statut: this.normalizeStatus(reservation.statut)
+    };
+    
+    this.showEditModal = true;
+  }
+
+  // Fermer le modal d'édition
+  closeEditModal() {
+    this.showEditModal = false;
+    this.editReservationData = {};
+    this.saving = false;
+  }
+
+  // Sauvegarder les modifications de la réservation
+  saveReservation() {
+    if (!this.editReservationData._id) {
+      this.showToast('❌ ID de réservation manquant', 'error');
+      return;
+    }
+
+    this.saving = true;
+
+    // Préparer les données pour l'API
+    const updateData = {
+      depart: this.editReservationData.depart,
+      destinationId: this.editReservationData.destinationId,
+      vol: {
+        ...this.editReservationData.vol,
+        dateDepart: this.editReservationData.vol.dateDepart ? new Date(this.editReservationData.vol.dateDepart).toISOString() : undefined,
+        dateRetour: this.editReservationData.vol.dateRetour ? new Date(this.editReservationData.vol.dateRetour).toISOString() : undefined
+      },
+      passagers: this.editReservationData.passagers,
+      prixTotal: this.editReservationData.prixTotal,
+      statut: this.editReservationData.statut
+    };
+
+    this.reservationService.updateReservation(this.editReservationData._id, updateData).subscribe({
+      next: (res) => {
+        this.saving = false;
+        this.closeEditModal();
+        this.showToast('✅ Réservation modifiée avec succès', 'success');
+        this.loadReservations(); // Recharger la liste
+        this.loadStats(); // Recharger les statistiques
+      },
+      error: (err) => {
+        this.saving = false;
+        console.error('Erreur modification réservation:', err);
+        
+        let errorMessage = 'Erreur lors de la modification';
+        if (err.error?.message) {
+          errorMessage = err.error.message;
+        } else if (err.status === 404) {
+          errorMessage = 'Réservation non trouvée';
+        } else if (err.status === 400) {
+          errorMessage = 'Données invalides';
+        }
+        
+        this.showToast(`❌ ${errorMessage}`, 'error');
+      }
+    });
+  }
+
+  // Utilitaire pour formater la date pour le input datetime-local
+  private formatDateTimeLocal(dateString: string): string {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    return date.toISOString().slice(0, 16);
   }
 
   // CORRECTION: Afficher un message de confirmation amélioré
   showStatusUpdateMessage(reference: string, status: string) {
     const statusMessages: { [key: string]: string } = {
       'en_attente': 'laissée en attente',
-      'confirmée': 'confirmée',
-      'annulée': 'annulée',
-      'confirmee': 'confirmée', // CORRECTION: Gérer les variations
+      'confirmee': 'confirmée',
       'annulee': 'annulée'
     };
     
@@ -323,10 +434,8 @@ export class ReservationManagement implements OnInit {
   // CORRECTION: Gestion des statuts améliorée
   getStatusClass(statut: string): string {
     const statusMap: { [key: string]: string } = {
-      'confirmée': 'confirmed',
+      'confirmee': 'confirmed',
       'en_attente': 'pending', 
-      'annulée': 'cancelled',
-      'confirmee': 'confirmed', // CORRECTION: Gérer les variations
       'annulee': 'cancelled'
     };
     return statusMap[statut] || 'pending'; // CORRECTION: "pending" par défaut
@@ -334,47 +443,63 @@ export class ReservationManagement implements OnInit {
 
   getStatusText(statut: string): string {
     const statusMap: { [key: string]: string } = {
-      'confirmée': 'Confirmée',
+      'confirmee': 'Confirmée',
       'en_attente': 'En attente',
-      'annulée': 'Annulée',
-      'confirmee': 'Confirmée', // CORRECTION: Gérer les variations
       'annulee': 'Annulée'
     };
     return statusMap[statut] || 'En attente'; // CORRECTION: "En attente" par défaut
-  }
-
-  // Voir les détails d'une réservation
-  viewReservation(id: string) {
-    if (!id) {
-      this.showToast('❌ ID de réservation invalide', 'error');
-      return;
-    }
-    
-    this.reservationService.getReservation(id).subscribe({
-      next: (reservation) => {
-        const message = `
-          Détails de la réservation:
-          Référence: ${reservation.referenceReservation}
-          Départ: ${reservation.depart}
-          Destination: ${reservation.destinationId?.nom}
-          Passagers: ${reservation.passagers?.length || 0}
-          Prix Total: ${reservation.prixTotal} FCFA
-          Statut: ${this.getStatusText(reservation.statut)}
-          Date: ${new Date(reservation.createdAt).toLocaleDateString('fr-FR')}
-        `;
-        alert(message);
-      },
-      error: (err) => {
-        console.error('Erreur chargement détails:', err);
-        this.showToast('❌ Erreur lors du chargement des détails', 'error');
-      }
-    });
   }
 
   // Réinitialiser la recherche
   clearSearch() {
     this.searchTerm = '';
     this.currentPage = 1;
+  }
+
+  // Navigation vers une page spécifique
+  goToPage(page: number | string) {
+    if (typeof page !== 'number') return;
+    
+    if (page >= 1 && page <= this.totalPages) {
+      this.currentPage = page;
+    }
+    // this.currentPage = page;
+  }
+  
+
+  // Générer les numéros de page à afficher
+  getPageNumbers(): (number | string)[] {
+    const pages: (number | string)[] = [];
+    const maxVisiblePages = 5;
+    
+    if (this.totalPages <= maxVisiblePages) {
+      // Afficher toutes les pages si peu de pages
+      for (let i = 1; i <= this.totalPages; i++) {
+        pages.push(i);
+      }
+    } else {
+      // Afficher les premières pages, pages autour de la page actuelle, et dernières pages
+      pages.push(1);
+      
+      if (this.currentPage > 3) {
+        pages.push('...');
+      }
+      
+      const start = Math.max(2, this.currentPage - 1);
+      const end = Math.min(this.totalPages - 1, this.currentPage + 1);
+      
+      for (let i = start; i <= end; i++) {
+        pages.push(i);
+      }
+      
+      if (this.currentPage < this.totalPages - 2) {
+        pages.push('...');
+      }
+      
+      pages.push(this.totalPages);
+    }
+    
+    return pages;
   }
 
   // Exporter les données

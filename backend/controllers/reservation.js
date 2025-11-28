@@ -4,13 +4,29 @@ const Destination = require('../models/destinationModel');
 // 📌 Obtenir toutes les réservations
 exports.obtenirReservations = async (req, res) => {
   try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+
     const reservations = await Reservation.find()
       .populate('destinationId')
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
+
+    const total = await Reservation.countDocuments();
 
     res.status(200).json({
       statut: 'succes',
-      donnees: { reservations }
+      donnees: { 
+        reservations,
+        pagination: {
+          page,
+          limit,
+          total,
+          pages: Math.ceil(total / limit)
+        }
+      }
     });
 
   } catch (erreur) {

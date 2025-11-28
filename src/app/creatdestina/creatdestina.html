@@ -121,14 +121,19 @@
       </div>
 
       <!-- Vols par semaine -->
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-2">Vols par semaine *</label>
-        <input type="number" formControlName="volsParSemaine" 
-               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-               placeholder="Ex: 7">
-        <div *ngIf="volsParSemaine?.invalid && volsParSemaine?.touched" class="text-red-600 text-sm mt-1">
+      <div class="mt-4">
+        <label class="block text-sm font-medium text-gray-700 mb-2">Nombre de vols par semaine *</label>
+        <div class="relative rounded-md shadow-sm">
+          <input type="number" formControlName="volsParSemaine" 
+                min="1" max="100"
+                class="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Ex: 7">
+        </div>
+        <div *ngIf="volsParSemaine?.invalid && (volsParSemaine?.dirty || volsParSemaine?.touched)" 
+             class="mt-1 text-sm text-red-600">
           <div *ngIf="volsParSemaine?.errors?.['required']">Le nombre de vols est obligatoire</div>
-          <div *ngIf="volsParSemaine?.errors?.['pattern']">Doit être un nombre</div>
+          <div *ngIf="volsParSemaine?.errors?.['min']">Le nombre minimum est de 1</div>
+          <div *ngIf="volsParSemaine?.errors?.['max']">Le nombre maximum est de 100</div>
         </div>
       </div>
     </div>

@@ -114,9 +114,15 @@
         </nav>
 
         <div class="content-actions">
-          <button class="btn btn-primary" routerLink="/admin/vols/nouveau">
-            <span class="btn-icon">➕</span> Nouveau Vol
-          </button>
+            <a routerLink="/admin/reservations" class="btn btn-primary me-2">
+              <span class="btn-icon">📋</span> Voir les réservations
+            </a>
+            <a routerLink="/admin/creer-destination" class="btn btn-primary">
+              <span class="btn-icon">➕</span> Créer destination
+              </a>
+            <!-- <a routerLink="/admin/vols/nouveau" class="btn btn-primary">
+              <span class="btn-icon">➕</span> Nouveau Vol
+            </a> -->
         </div>
       </div>
 
@@ -146,24 +152,7 @@
 
         </div>
       </div>
-      <a routerLink="/admin/creer-destination">Créer destination</a>
-      <!-- Recent Activities -->
-      <div class="recent-activities">
-        <h3>Activités Récentes</h3>
-
-        <div class="activities-list">
-          <div class="activity-item" *ngFor="let activity of recentActivities">
-            <span class="activity-icon">{{ activity.icon }}</span>
-
-            <div class="activity-content">
-              <p class="activity-text">{{ activity.description }}</p>
-              <span class="activity-time">{{ activity.time }}</span>
-            </div>
-
-          </div>
-        </div>
-      </div>
-
+      <!-- <a routerLink="/admin/creer-destination">Créer destination</a> -->
       <!-- Router Outlet -->
 <div class="dashboard-section">
   <router-outlet></router-outlet>

@@ -46,7 +46,7 @@ exports.sendContactMessage = async (req, res) => {
       subject,
       message,
       reply_to: email,
-      to_name: "Fondation Mayar",
+      to_name: "TCHAD_VOYAGE",
     };
 
     const options = {
@@ -76,3 +76,4 @@ exports.sendContactMessage = async (req, res) => {
     });
   }
 };
+  

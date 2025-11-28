@@ -77,7 +77,7 @@ export class Creatdestina implements OnInit {
       description: [''],
       prix: ['', [Validators.required, Validators.pattern('^[0-9]+$')]],
       dureeVol: ['', [Validators.required]],
-      volsParSemaine: ['', [Validators.required, Validators.pattern('^[0-9]+$')]],
+      volsParSemaine: ['', [Validators.required, Validators.min(1), Validators.max(100)]],
       avion: ['', [Validators.required]],
       'aeroport.nom': ['', [Validators.required]],
       'aeroport.code': ['', [Validators.required, Validators.pattern('^[A-Z]{3,4}$')]],

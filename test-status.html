@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Statut Réservation</title>
+    <script>
+        async function testStatusUpdate() {
+            const reservationId = '6926bb6d180e909c26d783f5';
+            const newStatus = 'confirmee';
+            
+            try {
+                const response = await fetch(`http://localhost:3000/api/reservations/${reservationId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ statut: newStatus })
+                });
+                
+                const result = await response.json();
+                console.log('Résultat:', result);
+                
+                if (result.statut === 'succes') {
+                    document.getElementById('result').innerHTML = 
+                        `✅ Statut mis à jour avec succès!<br>
+                        Référence: ${result.donnees.reservation.referenceReservation}<br>
+                        Nouveau statut: ${result.donnees.reservation.statut}`;
+                } else {
+                    document.getElementById('result').innerHTML = `❌ Erreur: ${result.message}`;
+                }
+            } catch (error) {
+                document.getElementById('result').innerHTML = `❌ Erreur réseau: ${error.message}`;
+            }
+        }
+        
+        async function testGetReservations() {
+            try {
+                const response = await fetch('http://localhost:3000/api/reservations');
+                const result = await response.json();
+                
+                console.log('Réservations:', result);
+                
+                const html = result.donnees.reservations.map(r => 
+                    `<div style="margin: 10px; padding: 10px; border: 1px solid #ccc;">
+                        <strong>${r.referenceReservation}</strong> - 
+                        <span style="color: ${r.statut === 'confirmee' ? 'green' : r.statut === 'annulee' ? 'red' : 'orange'}">
+                            ${r.statut}
+                        </span>
+                    </div>`
+                ).join('');
+                
+                document.getElementById('reservations').innerHTML = html;
+            } catch (error) {
+                document.getElementById('reservations').innerHTML = `❌ Erreur: ${error.message}`;
+            }
+        }
+    </script>
+</head>
+<body>
+    <h1>Test de mise à jour de statut</h1>
+    
+    <button onclick="testStatusUpdate()">Mettre à jour statut vers confirmee</button>
+    <button onclick="testGetReservations()">Charger les réservations</button>
+    
+    <div id="result" style="margin: 20px; padding: 10px; background: #f0f0f0;"></div>
+    <div id="reservations" style="margin: 20px;"></div>
+</body>
+</html>

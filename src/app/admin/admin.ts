@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import { RouterLink, RouterOutlet, RouterLinkActive, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AdminService } from '../services/admin.service';
+import { ReservationManagement } from '../reservation-management./reservation-management';
 
 interface MenuItem {
   path: string;
@@ -30,7 +31,8 @@ interface StatCard {
     RouterOutlet, 
     RouterLink, 
     RouterLinkActive,
-    FormsModule
+    FormsModule,
+    ReservationManagement
   ],
   templateUrl: './admin.html',
   styleUrls: ['./admin.css']
@@ -39,7 +41,6 @@ export class Admin implements OnInit, OnDestroy {
   sidebarOpen = true;
   currentUser: any = null;
   stats: StatCard[] = [];
-  recentActivities: any[] = [];
   isLoading = false;
 
   menuItems: MenuItem[] = [
@@ -102,7 +103,6 @@ export class Admin implements OnInit, OnDestroy {
   ngOnInit() {
     this.loadCurrentUser();
     this.loadDashboardStats();
-    this.loadRecentActivities();
   }
 
   loadCurrentUser() {
@@ -122,17 +122,6 @@ export class Admin implements OnInit, OnDestroy {
       error: (error) => {
         console.error('Erreur chargement stats:', error);
         this.isLoading = false;
-      }
-    });
-  }
-
-  loadRecentActivities() {
-    this.adminService.getRecentActivities().subscribe({
-      next: (activities) => {
-        this.recentActivities = activities;
-      },
-      error: (error) => {
-        console.error('Erreur chargement activités:', error);
       }
     });
   }

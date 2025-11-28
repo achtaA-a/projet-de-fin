@@ -9,6 +9,7 @@ import { Creatdestina } from './creatdestina/creatdestina';
 
 // Layout Admin
 import { Admin } from './admin/admin';
+import { ReservationManagement } from './reservation-management./reservation-management';
 
 export const routes: Routes = [
 
@@ -32,6 +33,7 @@ export const routes: Routes = [
       { path: 'dashboard', component: DashboardComponent },
       { path: 'destinations', component: ListDestina },
       { path: 'creer-destination', component: Creatdestina },
+      { path: 'reservations', component: ReservationManagement },
 
       // Redirection par défaut
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' }

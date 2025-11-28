@@ -87,7 +87,12 @@ export class ReservationComponent implements OnInit {
       { code: 'MQQ', nom: 'Aéroport de Moundou', ville: 'Moundou', pays: 'Tchad' },
       { code: 'AEH', nom: 'Aéroport d\'Abéché', ville: 'Abéché', pays: 'Tchad' },
       { code: 'FYT', nom: 'Aéroport de Faya-Largeau', ville: 'Faya-Largeau', pays: 'Tchad' },
-      { code: 'SRH', nom: 'Aéroport de Sarh', ville: 'Sarh', pays: 'Tchad' }
+      { code: 'SRH', nom: 'Aéroport de Sarh', ville: 'Sarh', pays: 'Tchad' },
+      { code: 'PAR', nom: 'Aéroport Charles de Gaulle', ville: 'Paris', pays: 'France' },
+      { code: 'LON', nom: 'Aéroport de Heathrow', ville: 'Londres', pays: 'Royaume-Uni' },
+      { code: 'IST', nom: 'Aéroport International d\'Istanbul', ville: 'Istanbul', pays: 'Turquie' },
+      { code: 'DXB', nom: 'Aéroport International de Dubaï', ville: 'Dubaï', pays: 'Émirats Arabes Unis' },
+      { code: 'NYC', nom: 'Aéroport International JFK', ville: 'New York', pays: 'États-Unis' }
     ];
 
     this.flightSearch.departure = 'NDJ';
@@ -172,7 +177,7 @@ export class ReservationComponent implements OnInit {
 
   getDepartureName(code: string): string {
     const aeroport = this.aeroportsDepart.find(a => a.code === code);
-    return aeroport ? `${aeroport.code} - ${aeroport.ville}` : code;
+    return aeroport ? `${aeroport.ville} (${aeroport.pays})` : code;
   }
 
   getDestinationName(code: string): string {
@@ -371,5 +376,9 @@ export class ReservationComponent implements OnInit {
     this.passagers = [];
     this.prixTotal = 0;
     this.destinationSelectionnee = null;
+  }
+
+  retourAccueil() {
+    this.router.navigate(['/']);
   }
 }

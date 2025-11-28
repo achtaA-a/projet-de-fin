@@ -63,6 +63,130 @@
     </div>
   </div>
 
+  <!-- Modal de modification de réservation -->
+  <div *ngIf="showEditModal" class="modal-overlay" (click)="closeEditModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Modifier la réservation</h2>
+        <button class="modal-close" (click)="closeEditModal()">✕</button>
+      </div>
+      
+      <div class="modal-body">
+        <form #editForm="ngForm" (ngSubmit)="saveReservation()">
+          <!-- Informations de vol -->
+          <div class="form-section">
+            <h3>Informations de vol</h3>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="editDepart">Départ</label>
+                <select id="editDepart" [(ngModel)]="editReservationData.depart" name="depart" required>
+                  <option value="NDJ">N'Djamena (NDJ)</option>
+                  <option value="MQQ">Moundou (MQQ)</option>
+                  <option value="AEH">Abéché (AEH)</option>
+                  <option value="FYT">Faya-Largeau (FYT)</option>
+                  <option value="SRH">Sarh (SRH)</option>
+                  <option value="PAR">Paris (CDG) - France</option>
+                  <option value="LON">Londres (LHR) - Royaume-Uni</option>
+                  <option value="IST">Istanbul (IST) - Turquie</option>
+                  <option value="DXB">Dubaï (DXB) - Émirats Arabes Unis</option>
+                  <option value="NYC">New York (JFK) - États-Unis</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="editDestination">Destination</label>
+                <select id="editDestination" [(ngModel)]="editReservationData.destinationId" name="destinationId" required>
+                  <option *ngFor="let dest of destinations" [value]="dest._id">
+                    {{ dest.nom }} ({{ dest.code }})
+                  </option>
+                </select>
+              </div>
+            </div>
+            
+            <div class="form-row">
+              <div class="form-group">
+                <label for="editNumeroVol">Numéro de vol</label>
+                <input type="text" id="editNumeroVol" [(ngModel)]="editReservationData.vol.numeroVol" name="numeroVol" required>
+              </div>
+              <div class="form-group">
+                <label for="editDateDepart">Date de départ</label>
+                <input type="datetime-local" id="editDateDepart" [(ngModel)]="editReservationData.vol.dateDepart" name="dateDepart" required>
+              </div>
+            </div>
+            
+            <div class="form-row">
+              <div class="form-group">
+                <label for="editDateRetour">Date de retour</label>
+                <input type="datetime-local" id="editDateRetour" [(ngModel)]="editReservationData.vol.dateRetour" name="dateRetour">
+              </div>
+              <div class="form-group">
+                <label for="editClasse">Classe</label>
+                <select id="editClasse" [(ngModel)]="editReservationData.vol.classe" name="classe" required>
+                  <option value="economie">Économie</option>
+                  <option value="affaire">Affaire</option>
+                  <option value="premiere">Première</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Passagers -->
+          <div class="form-section">
+            <h3>Passagers</h3>
+            <div *ngFor="let passager of editReservationData.passagers; let i = index" class="passager-section">
+              <h4>Passager {{ i + 1 }}</h4>
+              <div class="form-row">
+                <div class="form-group">
+                  <label [for]="'editPrenom' + i">Prénom</label>
+                  <input [id]="'editPrenom' + i" [(ngModel)]="passager.prenom" [name]="'prenom' + i" required>
+                </div>
+                <div class="form-group">
+                  <label [for]="'editNom' + i">Nom</label>
+                  <input [id]="'editNom' + i" [(ngModel)]="passager.nom" [name]="'nom' + i" required>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label [for]="'editDateNaissance' + i">Date de naissance</label>
+                  <input [id]="'editDateNaissance' + i" type="date" [(ngModel)]="passager.dateNaissance" [name]="'dateNaissance' + i" required>
+                </div>
+                <div class="form-group">
+                  <label [for]="'editPasseport' + i">Numéro de passeport</label>
+                  <input [id]="'editPasseport' + i" [(ngModel)]="passager.numeroPasseport" [name]="'numeroPasseport' + i" required>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Prix et statut -->
+          <div class="form-section">
+            <h3>Prix et statut</h3>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="editPrixTotal">Prix total (FCFA)</label>
+                <input type="number" id="editPrixTotal" [(ngModel)]="editReservationData.prixTotal" name="prixTotal" required min="0">
+              </div>
+              <div class="form-group">
+                <label for="editStatut">Statut</label>
+                <select id="editStatut" [(ngModel)]="editReservationData.statut" name="statut" required>
+                  <option value="en_attente">En attente</option>
+                  <option value="confirmee">Confirmée</option>
+                  <option value="annulee">Annulée</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+      
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="closeEditModal()">Annuler</button>
+        <button type="submit" class="btn btn-primary" (click)="saveReservation()" [disabled]="editForm.invalid || saving">
+          {{ saving ? 'Sauvegarde...' : 'Sauvegarder' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- Tableau des réservations -->
   <div class="table-section">
     <div class="table-header">
@@ -165,8 +289,8 @@
                     class="status-select" [class]="getStatusClass(r.statut)" [disabled]="r.saving">
                     <!-- CORRECTION: Toujours afficher "En attente" comme option par défaut -->
                     <option value="en_attente">En attente</option>
-                    <option value="confirmée">Confirmée</option>
-                    <option value="annulée">Annulée</option>
+                    <option value="confirmee">Confirmée</option>
+                    <option value="annulee">Annulée</option>
                   </select>
                   <div class="status-saving" *ngIf="r.saving">
                     <div class="mini-spinner"></div>
@@ -175,10 +299,6 @@
               </td>
               <td class="actions-cell">
                 <div class="action-buttons">
-                  <button class="btn-action btn-view" (click)="viewReservation(r._id)" title="Voir les détails">
-                    <i class="action-icon">👁️</i>
-                    <span class="action-text">Détails</span>
-                  </button>
                   <button class="btn-action btn-edit" (click)="editReservation(r._id)" title="Modifier">
                     <i class="action-icon">✏️</i>
                     <span class="action-text">Modifier</span>
@@ -217,6 +337,45 @@
         <button class="btn btn-primary" (click)="loadReservations()">Actualiser</button>
       </div>
     </div>
+
+    <!-- Contrôles de pagination client -->
+    <div *ngIf="!loading && filteredReservations.length > 0" class="client-pagination-controls">
+      <div class="pagination-info">
+        Affichage de {{ getStartIndex() }} à {{ getEndIndex() }} sur {{ filteredReservations.length }} réservations
+      </div>
+
+      <div class="pagination-buttons">
+        <button class="btn-pagination" [disabled]="currentPage === 1" (click)="previousPage()">
+          ‹ Précédent
+        </button>
+
+        <div class="page-numbers">
+          <!-- <button 
+            *ngFor="let page of getPageNumbers()" 
+            class="btn-page-number"
+            [class.active]="page === currentPage"
+            [disabled]="page === '...'"
+            (click)="page !== '...' && goToPage(page)">
+            {{ page }}
+          </button> -->
+          <ng-container *ngFor="let page of getPageNumbers()">
+            <!-- Si c'est "...", on affiche un label -->
+            <span *ngIf="page === '...'" class="ellipsis">…</span>
+
+            <!-- Sinon c'est un nombre cliquable -->
+            <button *ngIf="page !== '...'" class="btn-page-number" [class.active]="page === currentPage"
+              (click)="goToPage(page)">
+              {{ page }}
+            </button>
+          </ng-container>
+        </div>
+
+        <button class="btn-pagination" [disabled]="currentPage === totalPages" (click)="nextPage()">
+          Suivant ›
+        </button>
+      </div>
+    </div>
+
     <!-- CORRECTION: Contrôles de pagination API -->
     <div class="api-pagination-controls">
       <div class="items-per-page">

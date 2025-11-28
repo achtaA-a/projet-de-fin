@@ -52,6 +52,11 @@ export class ReservationService {
     return this.http.get<any>(`${this.apiUrl}/statistiques`);
   }
 
+  /** 🔹 Récupérer les destinations pour les formulaires */
+  getDestinations(): Observable<any> {
+    return this.http.get<any>('http://localhost:3000/api/destinations');
+  }
+
   /** 🔹 Annuler une réservation (raccourci pratique) */
   cancelReservation(id: string): Observable<any> {
     return this.updateReservation(id, { statut: 'annulee' });
